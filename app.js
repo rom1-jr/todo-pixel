@@ -967,16 +967,18 @@
   const byArchived = (a, b) => (b.archivedAt - a.archivedAt);
   // Rappel : page de grimoire déchirée. Tâche : pierre volcanique (haute), dalle de pierre (moyenne), parchemin abîmé (faible).
   const lookOf = t => t.kind === 'reminder' ? 't-page' : (t.urg === 3 ? 't-lava' : (t.urg === 2 ? 't-stone' : 't-vellum'));
-  // La longue fiole : vide (pas commencée), liquide qui monte et descend avec son écume (en cours), pleine (validée).
-  // Plus la tâche est urgente, plus ça bouillonne : vert calme, bleu, puis potion en pleine ébullition.
-  const BUBBLES = { 't-vellum': 2, 't-stone': 3, 't-lava': 7 };
+  // La longue fiole : vide (pas commencée), liquide qui monte et descend doucement avec son écume (en cours), pleine (validée).
+  // Plus la tâche est urgente, plus ça bouillonne : vert calme, bleu, puis potion de feu qui bout sur place.
+  // --ph cale la marée sur l'horloge (cycle de 18 s) : quand la liste se redessine, le niveau ne saute pas.
+  const BUBBLES = { 't-vellum': 2, 't-stone': 3, 't-lava': 9 };
   const flaskHTML = (st, look) => {
-    let inner = '';
+    let inner = '', ph = '';
     if (st === 'doing') {
       for (let i = 1; i <= (BUBBLES[look] || 3); i++) inner += '<span class="bub b' + i + '"></span>';
       inner += anim2(FOAM, 'foam', 2, 'foam-edge');
+      ph = ' style="--ph:-' + (Date.now() % 18000 / 1000).toFixed(2) + 's"';
     }
-    return '<div class="flask" data-state="' + st + '" aria-hidden="true"><div class="glass"><div class="tube"><div class="liquid">' + inner +
+    return '<div class="flask" data-state="' + st + '"' + ph + ' aria-hidden="true"><div class="glass"><div class="tube"><div class="liquid">' + inner +
       '</div></div></div><span class="neck">' + sprite(NECK, 'neckp', 2) + '</span></div>';
   };
 

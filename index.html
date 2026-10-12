@@ -340,38 +340,51 @@ button.box:active { transform: translateY(2px); }
 /* the long potion flask: empty, brewing (green liquid with white foam) or full */
 .flask { position: relative; flex: 1 1 auto; min-width: 0; height: 32px; filter: drop-shadow(0 2px 0 rgba(20, 16, 30, .22)); }
 .flask .glass { position: absolute; left: 0; top: 0; bottom: 0; right: 22px; background: #24302f; }
-.flask .tube { position: absolute; inset: 2px; overflow: hidden; background: linear-gradient(#f4fcfa 0 4px, #dcefeb 4px calc(100% - 6px), #c2dfd8 calc(100% - 6px)); }
+.flask .tube { position: absolute; inset: 2px; overflow: hidden; container-type: inline-size; background: linear-gradient(#f4fcfa 0 4px, #dcefeb 4px calc(100% - 6px), #c2dfd8 calc(100% - 6px)); }
 .flask .tube::after { content: ""; position: absolute; left: 10px; right: 12px; top: 4px; height: 2px; background: rgba(255, 255, 255, .8); }
 .liquid { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(#c6f5a0 0 4px, #7bd957 4px 55%, #55bb43 55% calc(100% - 4px), #3a9638 calc(100% - 4px)); }
-.flask[data-state="doing"] .liquid { animation: brew 3.4s ease-in-out infinite alternate; }
+/* in progress: a slow, gentle tide. The phase (--ph) follows the clock, so a refresh of the list never makes the level jump. */
+.flask[data-state="doing"] .liquid { animation: brew 9s ease-in-out var(--ph, 0s) infinite alternate; }
 .flask[data-state="done"] .liquid { width: 100%; }
-@keyframes brew { from { width: 16%; } to { width: 90%; } }
+@keyframes brew { from { width: 36%; } to { width: 64%; } }
+.boot .flask[data-state="doing"] .liquid { animation: fill 2.2s ease-in-out infinite alternate; }
+@keyframes fill { from { width: 12%; } to { width: 88%; } }
 .foam-edge { position: absolute; top: 0; right: -8px; }
-.bub { position: absolute; bottom: 3px; width: 2px; height: 2px; background: #effee4; opacity: 0; animation: rise 1.8s ease-in infinite; }
-.bub.b1 { left: 22%; }
-.bub.b2 { left: 50%; animation-delay: -.6s; }
-.bub.b3 { left: 76%; animation-delay: -1.2s; }
-@keyframes rise { 0% { transform: translateY(0); opacity: 0; } 25% { opacity: 1; } 100% { transform: translateY(-20px); opacity: 0; } }
+.flask .foam-edge > .spr { animation-duration: 1.8s; }
+/* bubbles rise straight up, from the part of the flask that always holds liquid (cqw = width of the tube) */
+.bub { position: absolute; bottom: 3px; width: 2px; height: 2px; background: #effee4; opacity: 0; animation: rise 2.8s ease-in infinite; }
+.bub.b1 { left: 8cqw; }
+.bub.b2 { left: 19cqw; animation-delay: -1s; }
+.bub.b3 { left: 30cqw; animation-delay: -1.9s; }
+@keyframes rise { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(-20px); opacity: 0; } }
 .neck { position: absolute; right: 0; top: 0; }
-/* low urgency: calm green; medium: blue, same slow tide; high: a boiling fire potion, chaotic */
-.t-vellum .bub { animation-duration: 2.6s; }
+/* low urgency: calm green; medium: blue, a few more bubbles; high: a fire potion boiling in place, the level stays still */
+.t-vellum .bub { animation-duration: 3.6s; }
+.t-vellum .bub.b1 { left: 11cqw; }
+.t-vellum .bub.b2 { left: 25cqw; animation-delay: -1.8s; }
 .t-stone .liquid { background: linear-gradient(#cdeeff 0 4px, #6cc0f2 4px 55%, #3f97dc 55% calc(100% - 4px), #2a6fb0 calc(100% - 4px)); }
 .t-stone .bub { background: #e6f6ff; }
 .t-lava .liquid { background: linear-gradient(#ffe7a0 0 4px, #ff9a3c 4px 55%, #ea5c22 55% calc(100% - 4px), #a8321a calc(100% - 4px)); }
-.t-lava .flask[data-state="doing"] .liquid { animation: boil 2.9s ease-in-out infinite; }
-@keyframes boil {
-  0% { width: 22%; } 11% { width: 47%; } 19% { width: 36%; } 31% { width: 74%; } 38% { width: 61%; }
-  52% { width: 90%; } 60% { width: 70%; } 71% { width: 86%; } 83% { width: 44%; } 91% { width: 58%; } 100% { width: 22%; }
+.t-lava .flask[data-state="doing"] .liquid { width: 66%; animation: simmer 2.6s ease-in-out infinite alternate; }
+@keyframes simmer { from { filter: brightness(1); } to { filter: brightness(1.12); } }
+/* the boil: small bubbles and pixel rings rising straight up, popping at the surface */
+.t-lava .bub { background: #fff1c0; animation: boil-up 1.8s ease-in infinite; }
+.t-lava .bub.b2, .t-lava .bub.b5, .t-lava .bub.b8 { bottom: 5px; background: transparent; box-shadow: 0 -2px #fff1c0, -2px 0 #fff1c0, 2px 0 #fff1c0, 0 2px #fff1c0; }
+.t-lava .bub.b1 { left: 6%; animation-duration: 1.6s; animation-delay: -.2s; }
+.t-lava .bub.b2 { left: 17%; animation-duration: 2.1s; animation-delay: -1.3s; }
+.t-lava .bub.b3 { left: 27%; animation-duration: 1.8s; animation-delay: -.9s; }
+.t-lava .bub.b4 { left: 38%; animation-duration: 1.5s; animation-delay: -.5s; }
+.t-lava .bub.b5 { left: 48%; animation-duration: 2.3s; animation-delay: -.4s; }
+.t-lava .bub.b6 { left: 58%; animation-duration: 1.7s; animation-delay: -1.4s; }
+.t-lava .bub.b7 { left: 69%; animation-duration: 1.9s; animation-delay: -.7s; }
+.t-lava .bub.b8 { left: 79%; animation-duration: 2s; animation-delay: -1.7s; }
+.t-lava .bub.b9 { left: 89%; animation-duration: 1.6s; animation-delay: -1.1s; }
+@keyframes boil-up {
+  0% { translate: 0 0; scale: 1; opacity: 0; } 15% { opacity: 1; } 82% { scale: 1; opacity: 1; }
+  100% { translate: 0 -21px; scale: 1.6; opacity: 0; }
 }
-.t-lava .bub { width: 3px; height: 3px; background: #fff1c0; animation: boil-up .9s ease-in infinite; }
-.t-lava .bub.b1 { left: 12%; } .t-lava .bub.b2 { left: 28%; animation-delay: -.25s; } .t-lava .bub.b3 { left: 41%; animation-delay: -.55s; }
-.t-lava .bub.b4 { left: 55%; animation-delay: -.1s; } .t-lava .bub.b5 { left: 67%; animation-delay: -.7s; } .t-lava .bub.b6 { left: 79%; animation-delay: -.4s; }
-.t-lava .bub.b7 { left: 90%; animation-delay: -.8s; width: 2px; height: 2px; }
-@keyframes boil-up { 0% { transform: translate(0, 0); opacity: 0; } 20% { opacity: 1; } 60% { transform: translate(-2px, -14px); } 100% { transform: translate(1px, -24px); opacity: 0; } }
-.t-lava .foam-edge { animation: churn .32s steps(2, end) infinite; }
-.t-lava .foam-edge > .spr { animation-duration: .3s; }
+.t-lava .foam-edge > .spr { animation-duration: 1s; }
 .t-lava .foam .p-W { fill: #ffe2b0; }
-@keyframes churn { 0% { transform: translateY(-1px); } 100% { transform: translateY(1px); } }
 .portrait { flex: 0 0 auto; width: 44px; height: 48px; display: flex; align-items: flex-end; justify-content: center; overflow: hidden; background-color: #c5d7ea; }
 .portrait[data-cat="perso"] { background-color: #cde3b3; }
 .card[data-status="doing"] .portrait .char { animation: hop .7s steps(1, end) infinite; }
