@@ -5,12 +5,12 @@
 window.TODO_CONFIG = {
   // Colle ici l'objet firebaseConfig donné par la console Firebase (étape 3.5 du guide).
   firebase: {
-    apiKey: "REMPLACE-MOI",
-    authDomain: "REMPLACE-MOI.firebaseapp.com",
-    projectId: "REMPLACE-MOI",
-    storageBucket: "REMPLACE-MOI.firebasestorage.app",
-    messagingSenderId: "REMPLACE-MOI",
-    appId: "REMPLACE-MOI"
+    apiKey: "AIzaSyDaRpITeW3SrTiDb8weyYcDDk9ug3zeChQ",
+    authDomain: "todo-pixel.firebaseapp.com",
+    projectId: "todo-pixel",
+    storageBucket: "todo-pixel.firebasestorage.app",
+    messagingSenderId: "175164193349",
+    appId: "1:175164193349:web:31c65caacf2246b4e2412c"
   },
   // Clé PUBLIQUE de notification, générée avec outils/cles-notifications.html (étape 7.1 du guide).
   vapidPublicKey: "REMPLACE-MOI"
