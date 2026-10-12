@@ -1,0 +1,40 @@
+name: Récap du matin
+
+on:
+  schedule:
+    # Toutes les heures de 4 h à 9 h UTC (soit 6 h à 11 h à Paris, été comme hiver).
+    # Le script n'envoie la notif qu'une fois par jour, à l'heure choisie dans l'appli.
+    - cron: '12 4-9 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Envoyer le récap tout de suite, quelle que soit l'heure"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recap
+  cancel-in-progress: false
+
+jobs:
+  recap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: recap
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: node send-recap.mjs
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: https://${{ github.repository_owner }}.github.io
+          FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force }}
