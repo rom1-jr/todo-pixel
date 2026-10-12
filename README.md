@@ -87,6 +87,8 @@ Ouvre-la toujours depuis l'icône, pas depuis Safari.
 ### 7.4 Clé secrète : la clé d'accès Firebase
 Firebase → **Paramètres du projet** → **Comptes de service** → **Générer une nouvelle clé privée**. Ouvre le `.json` avec le Bloc-notes, copie tout → secret `FIREBASE_SERVICE_ACCOUNT`. Supprime ensuite le fichier du PC ; ne le mets jamais dans le dépôt.
 
+**Vérifie l'endroit** : onglet **Secrets**, les deux noms doivent être sous **Repository secrets** (pas dans **Variables**, ni sous **Environment secrets**), sinon GitHub ne les donne pas au récap.
+
 ### 7.5 Garder le récap actif
 **Settings** → **Actions** → **General** → **Workflow permissions** → **Read and write permissions** → **Save**. Le workflow `keepalive.yml` évite la mise en pause de GitHub après 60 jours sans activité.
 
