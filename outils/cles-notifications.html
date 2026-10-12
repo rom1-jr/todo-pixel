@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clés de notification</title>
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; padding: 24px 16px 40px; background: #8fd4f4; color: #3d2814; font: 16px/1.5 "Trebuchet MS", system-ui, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; background: #f9eed2; border: 4px solid #23266f; box-shadow: 0 6px 0 rgba(28, 22, 50, .35); padding: 20px; }
+  h1 { margin: 0 0 8px; font-size: 24px; color: #23266f; }
+  p { margin: 0 0 12px; }
+  .key { margin: 16px 0; }
+  label { display: block; font-weight: 700; margin-bottom: 6px; }
+  textarea { width: 100%; box-sizing: border-box; min-height: 70px; padding: 8px; border: 3px solid #7a5a36; background: #fffaf0; font: 14px/1.4 Consolas, "Cascadia Mono", monospace; resize: vertical; }
+  button { font: 700 16px/1 system-ui, sans-serif; padding: 12px 16px; border: 3px solid #103019; background: #35a853; color: #fff; cursor: pointer; }
+  button.copy { border-color: #4a3210; background: #f0c04a; color: #3d2814; padding: 8px 12px; font-size: 14px; margin-top: 6px; }
+  .warn { background: #ffe1dc; border-left: 6px solid #c9402f; padding: 10px 12px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Clés de notification</h1>
+  <p>Cette page crée la paire de clés qui permet à GitHub d'envoyer le récap du matin à ton iPhone. Tout se passe dans ton navigateur : rien n'est envoyé nulle part.</p>
+  <button type="button" id="gen">Générer mes clés</button>
+  <section id="out" hidden>
+    <div class="key">
+      <label for="pub">Clé publique : à coller dans config.js (vapidPublicKey)</label>
+      <textarea id="pub" readonly></textarea>
+      <button type="button" class="copy" data-for="pub">Copier la clé publique</button>
+    </div>
+    <div class="key">
+      <label for="priv">Clé privée : à coller dans le secret GitHub VAPID_PRIVATE_KEY</label>
+      <textarea id="priv" readonly></textarea>
+      <button type="button" class="copy" data-for="priv">Copier la clé privée</button>
+    </div>
+    <p class="warn">Garde la clé privée pour toi : colle-la seulement dans les secrets GitHub, puis ferme cette page. Si tu régénères des clés, il faudra réactiver le récap sur ton iPhone.</p>
+  </section>
+  <p id="err" class="warn" hidden></p>
+</main>
+<script>
+  const b64url = bytes => btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  document.getElementById('gen').addEventListener('click', async () => {
+    const err = document.getElementById('err');
+    err.hidden = true;
+    try {
+      const pair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+      const raw = await crypto.subtle.exportKey('raw', pair.publicKey);
+      const jwk = await crypto.subtle.exportKey('jwk', pair.privateKey);
+      document.getElementById('pub').value = b64url(raw);
+      document.getElementById('priv').value = jwk.d;
+      document.getElementById('out').hidden = false;
+    } catch (e) {
+      err.textContent = 'Ce navigateur ne peut pas générer les clés ici (' + (e && e.message) + '). Essaie avec Edge ou Chrome à jour.';
+      err.hidden = false;
+    }
+  });
+  document.querySelectorAll('.copy').forEach(btn => btn.addEventListener('click', () => {
+    const field = document.getElementById(btn.dataset.for);
+    field.select();
+    const label = btn.textContent;
+    const done = () => { btn.textContent = 'Copié !'; setTimeout(() => { btn.textContent = label; }, 1500); };
+    if (navigator.clipboard) navigator.clipboard.writeText(field.value).then(done, () => document.execCommand('copy') && done());
+    else if (document.execCommand('copy')) done();
+  }));
+</script>
+</body>
+</html>

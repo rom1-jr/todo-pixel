@@ -1,0 +1,11 @@
+{
+  "name": "todo-pixel-recap",
+  "private": true,
+  "description": "Envoie le récap du matin de la to do list sur les appareils abonnés.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "firebase-admin": "14.4.0",
+    "web-push": "3.6.7"
+  }
+}
