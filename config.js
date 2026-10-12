@@ -13,5 +13,5 @@ window.TODO_CONFIG = {
     appId: "1:175164193349:web:31c65caacf2246b4e2412c"
   },
   // Clé PUBLIQUE de notification, générée avec outils/cles-notifications.html (étape 7.1 du guide).
-  vapidPublicKey: "REMPLACE-MOI"
+  vapidPublicKey: "BBMrR8218T0zEQuanJ0lBDtM6fLOehCtIeDHvLsTOjCLRKL55AfrqLpmkSDV-CQ__N2CseBkwgcA20TFD7IbT4E"
 };
