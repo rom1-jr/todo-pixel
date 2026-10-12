@@ -44,14 +44,40 @@ function vapidPublicKey() {
   return m && !/REMPLACE/i.test(m[1]) ? m[1].trim() : '';
 }
 
+// Message affiché directement sur la page du lancement dans GitHub (encadré « Annotations »).
+function annotate(level, msg) {
+  if (!process.env.GITHUB_ACTIONS) return;
+  const text = String(msg).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+  console.log(`::${level} title=Récap du matin::${text}`);
+}
+const WHERE = 'dans le dépôt : Settings → Secrets and variables → Actions → onglet « Secrets » → « Repository secrets » (pas dans « Variables », ni dans un « Environment »)';
+
+function readAccount() {
+  const raw = (process.env.FIREBASE_SERVICE_ACCOUNT || '').trim();
+  if (!raw) throw new Error(`Le secret FIREBASE_SERVICE_ACCOUNT n'arrive pas jusqu'au récap (il est vide pour GitHub Actions). Il doit être enregistré ${WHERE}. Étape 7.4 du guide.`);
+  let account = null;
+  try { account = JSON.parse(raw); } catch (e) { account = null; }
+  if (!account || !account.project_id || !account.private_key || !account.client_email) {
+    throw new Error('Le secret FIREBASE_SERVICE_ACCOUNT est bien là, mais mal collé : recolle tout le contenu du fichier .json, de la première { à la dernière }. Étape 7.4 du guide.');
+  }
+  return account;
+}
+
+// Traduit les erreurs techniques les plus courantes en étape du guide à revoir.
+function explain(err) {
+  const msg = String((err && err.message) || err);
+  if (/NOT_FOUND|does not exist/i.test(msg)) return `La base Firestore est introuvable : vérifie l'étape 3.3 (base « (default) ») et que la clé de l'étape 7.4 vient du même projet Firebase. Détail : ${msg}`;
+  if (/PERMISSION_DENIED|invalid_grant|invalid jwt|UNAUTHENTICATED/i.test(msg)) return `Firebase refuse la clé d'accès : génère une nouvelle clé privée et remplace le secret FIREBASE_SERVICE_ACCOUNT (étape 7.4). Détail : ${msg}`;
+  if (/vapid (private|public) key/i.test(msg)) return `Les clés de notification sont mal collées ou ne vont pas ensemble : refais les étapes 7.1 à 7.3, puis réactive le récap sur l'iPhone (7.6). Détail : ${msg}`;
+  return msg;
+}
+
 async function main() {
-  let account;
-  try { account = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || ''); } catch (e) { account = null; }
-  if (!account || !account.project_id) throw new Error('Secret FIREBASE_SERVICE_ACCOUNT manquant ou mal collé (étape 7.4 du guide).');
+  const account = readAccount();
   const pub = vapidPublicKey();
   const priv = (process.env.VAPID_PRIVATE_KEY || '').trim();
   if (!pub) throw new Error('Clé publique de notification absente de config.js (étape 7.2 du guide).');
-  if (!priv) throw new Error('Secret VAPID_PRIVATE_KEY manquant (étape 7.3 du guide).');
+  if (!priv) throw new Error(`Le secret VAPID_PRIVATE_KEY n'arrive pas jusqu'au récap (il est vide pour GitHub Actions). Il doit être enregistré ${WHERE}. Étape 7.3 du guide.`);
 
   initializeApp({ credential: cert(account) });
   const db = getFirestore();
@@ -83,14 +109,18 @@ async function main() {
           removed++;
         } else {
           await subDoc.ref.update({ lastError: String(err.statusCode || err.message) });
-          console.error(`Échec d'envoi vers ${p.device || 'un appareil'} : ${err.statusCode || ''} ${err.body || err.message}`);
+          const line = `Échec d'envoi vers ${p.device || 'un appareil'} : ${err.statusCode || ''} ${err.body || err.message}`;
+          console.error(line);
+          annotate('warning', line);
         }
       }
     }
   }
-  console.log(`Récaps envoyés : ${sent} · ignorés (pas l'heure ou déjà envoyé) : ${skipped} · abonnements expirés retirés : ${removed}`);
+  const summary = `Récaps envoyés : ${sent} · ignorés (pas l'heure ou déjà envoyé) : ${skipped} · abonnements expirés retirés : ${removed}`;
+  console.log(summary);
+  annotate('notice', sent || skipped || removed ? summary : `${summary}. Aucun appareil abonné : active le récap sur l'iPhone (étape 7.6).`);
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  main().catch(err => { console.error(err.message || err); process.exit(1); });
+  main().catch(err => { const m = explain(err); console.error(m); annotate('error', m); process.exit(1); });
 }
