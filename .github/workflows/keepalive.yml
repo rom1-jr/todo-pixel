@@ -1,0 +1,25 @@
+name: Garder le récap actif
+
+# GitHub met en pause les tâches planifiées d'un dépôt public après 60 jours sans activité.
+# Ce petit job note la date une fois par mois pour que le récap du matin continue de tourner.
+on:
+  schedule:
+    - cron: '30 3 1 * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - run: |
+          date -u +"%Y-%m-%dT%H:%M:%SZ" > recap/derniere-activite.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add recap/derniere-activite.txt
+          git commit -m "Garde le récap du matin actif"
+          git push
