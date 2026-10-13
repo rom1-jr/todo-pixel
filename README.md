@@ -116,9 +116,9 @@ Dans l'appli ouverte depuis l'icône : **Réglages** (en haut à droite) → heu
 
 ## Au quotidien
 
-- **Une carte par tâche** : à gauche, la case de statut (× pas commencée, points qui tournent en cours, ✓ validée) ; au centre, le titre et l'objet ; à droite, **+** qui déroule la description et les boutons Modifier / Supprimer. En bas de la carte : la pastille d'urgence (verte, jaune ou rouge), l'objet et l'échéance. Les rappels sont des post-it écrits à la main.
+- **Une carte par tâche** : à gauche, la case de statut (× pas commencée, points qui tournent en cours, ✓ validée) ; au centre, le titre et l'objet ; à droite, **+** qui déroule la description, avec le crayon (modifier) et la corbeille (supprimer). En bas de la carte : la pastille d'urgence (verte, jaune ou rouge ; touche-la pour la changer), l'objet et l'échéance. Les rappels sont des post-it écrits à la main.
 - **Urgence haute** : le contour de la carte bat comme un cœur, pour la repérer d'un coup d'œil.
-- **Valider** : case de statut → **Validée**. La tâche éclate comme une bulle et part aux archives ; un rappel classé se déchire comme un post-it. **Voir les archives** en bas de l'écran (**Remettre dans la liste** si besoin).
+- **Valider** : case de statut → **Validée**. La tâche éclate comme une bulle et part aux archives ; un rappel classé se déchire comme un post-it. **Voir les archives** en bas de l'écran (la flèche de retour la remet dans la liste si besoin).
 - **Ajouter** : bouton **+** sous la liste (ou touche **N** sur PC). Dans le titre, une date (« demain », « lundi », « 15/10 ») devient l'échéance, une heure (« 14h », « 9h30 ») crée un rappel, un « ! » seul met l'urgence haute. Exemple : `Rappeler le fournisseur demain 14h`.
 - **Ordre de la liste** : ce qui est en retard d'abord, puis l'urgence, puis l'échéance la plus proche.
 - **Pro / Perso / Tout** : réglages → **Affichage sur cet appareil**. Choisis **Pro** sur le PC du bureau pour ne voir que le travail.
