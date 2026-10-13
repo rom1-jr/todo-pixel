@@ -1,5 +1,5 @@
 /* Service worker : appli disponible hors ligne, notifications du récap du matin et des rappels. */
-const CACHE = 'todo-list-v5';
+const CACHE = 'todo-list-v6';
 const SHELL = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const SHELL = [
   './vendor/firebase.js',
   './manifest.webmanifest',
   './fonts/montserrat-latin.woff2',
+  './fonts/caveat-latin.woff2',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',

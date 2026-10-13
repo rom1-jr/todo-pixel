@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>To do list</title>
 <meta name="description" content="Ta to do list : tâches, échéances, rappels et récap du matin, sur PC et iPhone.">
-<meta name="theme-color" content="#143f4d">
+<meta name="theme-color" content="#f1f3f4">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="To do list">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
@@ -20,10 +20,13 @@
    - uniquement les couleurs de la palette et leurs teintes : Midnight Green, Hunyadi Yellow, Cerulean, Blue Green,
      Raisin Black et beaucoup de blanc ; le vert et le rouge ne servent qu'aux pastilles d'urgence et aux retards ;
    - le « O » de la charte (bords arrondis, coin supérieur droit à angle droit) donne leur forme aux blocs.
-   Un bandeau Midnight Green avec le titre souligné d'or, les tâches en blocs avec un léger relief qui flottent,
-   les rappels en post-it collés, le bouton + sous la liste et le bouton des archives en bas. Animations façon iOS ;
-   tout s'arrête si l'appareil demande moins d'animations. */
+   Un bandeau Midnight Green arrondi qui flotte, avec le titre souligné d'or ; un fond très légèrement habillé
+   (trame de points, contour du « O ») ; les tâches en blocs en relief qui flottent, titre centré et souligné ;
+   les rappels en vrai post-it écrit à la main ; le contour des urgences hautes bat comme un cœur ; la barre
+   d'avancement façon chargement de jeu. Animations façon iOS ; tout s'arrête si l'appareil demande moins d'animations. */
 @font-face { font-family: "Montserrat"; font-style: normal; font-weight: 100 900; font-display: swap; src: url("fonts/montserrat-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+/* écriture à la main, pour les post-it */
+@font-face { font-family: "Caveat"; font-style: normal; font-weight: 400 700; font-display: swap; src: url("fonts/caveat-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 :root {
   color-scheme: light;
   /* palette de la charte */
@@ -58,18 +61,25 @@
   --ease-ios: cubic-bezier(.32, .72, 0, 1);
   --pop: 0 14px 34px rgba(20, 63, 77, .2), 0 3px 8px rgba(20, 63, 77, .1);
   --font-ui: "Montserrat", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-hand: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+  /* fond : teintes du Midnight Green de 3 % à 12 % (plus clair en haut, pour la profondeur), une trame de points très légère
+     et le contour du « O » en bas à gauche */
+  --page-bg:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 224'%3E%3Cpath fill='none' stroke='rgb(20,63,77)' stroke-opacity='.075' stroke-width='1.4' d='M64 .7H279.3V160A63.3 63.3 0 0 1 216 223.3H64A63.3 63.3 0 0 1 .7 160V64A63.3 63.3 0 0 1 64 .7ZM92 54H222V136A34 34 0 0 1 188 170H92A34 34 0 0 1 58 136V88A34 34 0 0 1 92 54Z'/%3E%3C/svg%3E") left -110px bottom -70px / 400px auto no-repeat,
+    radial-gradient(120% 55% at 50% 0%, #f8f9fa 0%, rgba(248, 249, 250, 0) 70%),
+    radial-gradient(circle, rgba(20, 63, 77, .14) 0 1.1px, rgba(20, 63, 77, 0) 1.7px) 0 0 / 22px 22px,
+    linear-gradient(180deg, #f1f3f4 0%, #e3e8ea 100%);
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 /* scroll-padding : ce qu'on atteint au clavier ne reste jamais caché sous la barre du bas */
-html { -webkit-text-size-adjust: 100%; background: #e3e8ea; scroll-padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+html { -webkit-text-size-adjust: 100%; background: var(--page-bg); background-color: #e3e8ea; background-attachment: fixed; scroll-padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
 body {
   margin: 0;
   min-height: 100%;
   padding-inline: 16px;
   padding-block: 0;
-  /* fond : teintes du Midnight Green de 3 % à 12 %, plus clair en haut, pour la profondeur */
-  background: radial-gradient(120% 60% at 50% 0%, #f8f9fa 0%, rgba(248, 249, 250, 0) 70%), linear-gradient(180deg, #f1f3f4 0%, #e3e8ea 100%);
+  background: var(--page-bg);
   background-attachment: fixed;
   color: var(--ink);
   font: 400 15px/1.45 var(--font-ui);
@@ -85,8 +95,12 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 .btn, .add, .status-box, .urg, .more, .tool, .qd, .menu-item { transition: transform .18s var(--ease-ios), background-color .15s, border-color .15s, box-shadow .18s; }
 .btn:active, .add:active, button.status-box:active, button.urg:active, .more:active, .tool:active, .qd:active { transform: scale(.94); }
 
-/* ---------- bandeau ---------- */
-.band { position: relative; z-index: 2; overflow: hidden; margin-inline: -16px; padding: calc(env(safe-area-inset-top, 0px) + 18px) 16px 18px; background: linear-gradient(180deg, rgba(255, 255, 255, .05) 0%, rgba(255, 255, 255, 0) 100%), var(--brand); color: var(--on-brand); box-shadow: 0 12px 26px -16px rgba(20, 63, 77, .7); }
+/* ---------- bandeau : bloc arrondi (forme du « O ») qui flotte au-dessus du fond ---------- */
+.band { position: relative; z-index: 2; overflow: hidden; max-width: 640px; margin: calc(env(safe-area-inset-top, 0px) + 12px) auto 0; padding: 18px 18px 18px 20px;
+  border-radius: 24px 0 24px 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .07) 0%, rgba(255, 255, 255, 0) 100%), var(--brand); color: var(--on-brand);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 2px 0 var(--brand-2), 0 8px 14px -6px rgba(20, 63, 77, .35), 0 26px 38px -18px rgba(20, 63, 77, .55);
+  animation: float 9s ease-in-out -2.5s infinite; }
 .band :focus-visible { outline-color: var(--gold); }
 .band-in { position: relative; z-index: 1; max-width: 640px; margin-inline: auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 /* le « O » de la charte en filigrane dans le coin droit du bandeau, coupé par le bord de l'écran */
@@ -121,16 +135,29 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 /* les tâches flottent doucement (2 px, lentement) ; la phase suit l'horloge pour ne pas sauter quand la liste se redessine */
 .card[data-kind="task"]:not(.is-archived) { animation: float 7s ease-in-out var(--fd, 0s) infinite; }
 @keyframes float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }
+/* urgence haute (tâche ou rappel) : le contour bat comme un cœur, deux battements rapprochés puis une pause */
+.card[data-urg="3"]:not(.is-archived):not(.fx-clone)::before { content: ""; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none;
+  box-shadow: 0 0 0 2px rgba(229, 72, 61, .75), 0 0 18px 4px rgba(229, 72, 61, .36);
+  opacity: .22; animation: heartbeat 1.5s ease-in-out infinite; }
+@keyframes heartbeat {
+  0%, 50%, 100% { opacity: .22; transform: scale(1); }
+  10% { opacity: 1; transform: scale(1.014); }
+  20% { opacity: .42; transform: scale(1.003); }
+  30% { opacity: .92; transform: scale(1.01); }
+}
 .card-top { display: grid; grid-template-columns: 42px minmax(0, 1fr) 34px; column-gap: 12px; align-items: start; }
 .status-box { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px 0 12px 12px; border: 1.5px solid var(--line-2); background: #fff; color: var(--ink-3); box-shadow: 0 1px 2px rgba(20, 63, 77, .08); }
 .status-box[data-st="doing"] { border-color: var(--teal); background: var(--teal-soft); color: var(--teal); }
 .status-box[data-st="bell"] { border-color: transparent; background: rgba(255, 255, 255, .7); color: var(--brand); }
 .status-box[data-st="done"] { border-color: var(--brand); background: var(--brand); color: var(--gold); }
 @media (hover: hover) { button.status-box:hover { border-color: var(--brand); } }
-.card-text { min-width: 0; display: grid; gap: 7px; padding-top: 2px; }
-.card-title { margin: 0; font: 600 16px/1.3 var(--font-ui); color: var(--ink); overflow-wrap: anywhere; text-wrap: pretty; }
+/* titre centré entre la case et le +, souligné d'un trait or comme le titre du bandeau */
+.card-text { min-width: 0; display: grid; justify-items: center; gap: 8px; padding-top: 2px; text-align: center; }
+.card-title { margin: 0; font: 600 16px/1.3 var(--font-ui); color: var(--ink); overflow-wrap: anywhere; text-wrap: balance; }
+.card-title::after { content: ""; display: block; width: 34px; height: 2.5px; margin: 7px auto 0; border-radius: 2px; background: var(--gold); }
 .card.is-archived .card-title { font-weight: 400; color: var(--ink-2); }
-.subject { justify-self: start; max-width: 100%; margin: 0; padding: 3px 11px; background: var(--surface-2); border-radius: 999px; font: 400 13.5px/1.4 var(--font-ui); color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card.is-archived .card-title::after { background: var(--line-2); }
+.subject { justify-self: center; max-width: 100%; margin: 0; padding: 3px 11px; background: var(--surface-2); border-radius: 999px; font: 400 13.5px/1.4 var(--font-ui); color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card.is-open .subject { white-space: normal; overflow-wrap: anywhere; border-radius: 12px; }
 .more { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; background: var(--surface-2); color: var(--brand); }
 .more .si { transition: transform .35s var(--spring); }
@@ -154,43 +181,72 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 .dot[data-urg="1"] { --c: var(--u1); --cd: var(--u1-d); --cg: rgba(52, 180, 90, .2); }
 .dot[data-urg="2"] { --c: var(--u2); --cd: var(--u2-d); --cg: rgba(235, 174, 68, .28); }
 .dot[data-urg="3"] { --c: var(--u3); --cd: var(--u3-d); --cg: rgba(229, 72, 61, .2); }
-.bar { flex: 1 1 90px; min-width: 60px; height: 8px; border-radius: 999px; background: var(--surface-2); box-shadow: inset 0 1px 2px rgba(20, 63, 77, .12); overflow: hidden; }
-.bar > span { display: block; height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, var(--teal), var(--sky)); }
-.card[data-status="doing"] .bar > span { width: 50%; }
-.card[data-status="done"] .bar > span { width: 100%; background: linear-gradient(90deg, var(--brand), var(--teal)); }
+/* barre d'avancement façon chargement de jeu vidéo : rainure en creux, remplissage brillant à rayures qui défilent
+   et une petite lueur en tête quand la tâche est en cours */
+.bar { position: relative; flex: 1 1 90px; min-width: 60px; height: 10px; border-radius: 999px; background: linear-gradient(180deg, rgba(20, 63, 77, .1) 0%, rgba(20, 63, 77, .03) 100%), var(--surface-2); box-shadow: inset 0 1px 2px rgba(20, 63, 77, .2), 0 1px 0 rgba(255, 255, 255, .9); overflow: hidden; }
+.bar > span { position: relative; display: block; height: 100%; width: 0; border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, .12) 45%, rgba(255, 255, 255, 0) 55%),
+    linear-gradient(45deg, rgba(255, 255, 255, .2) 25%, rgba(255, 255, 255, 0) 25%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, .2) 50%, rgba(255, 255, 255, .2) 75%, rgba(255, 255, 255, 0) 75%),
+    linear-gradient(90deg, var(--teal), var(--sky));
+  background-size: auto, 14px 14px, auto;
+  box-shadow: inset 0 -1px 0 rgba(13, 47, 58, .25); }
+.card[data-status="doing"] .bar > span { width: 50%; animation: stripes 1s linear infinite; }
+.card[data-status="doing"] .bar > span::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 12px; border-radius: 999px; background: radial-gradient(closest-side, rgba(255, 255, 255, .95), rgba(255, 255, 255, 0)); animation: glow 1.4s ease-in-out infinite; }
+.card[data-status="done"] .bar > span { width: 100%; background: linear-gradient(180deg, rgba(255, 255, 255, .4) 0%, rgba(255, 255, 255, 0) 55%), linear-gradient(90deg, var(--brand), var(--teal)); }
 .card.pop .bar > span { animation: grow .7s var(--ease-ios); }
+.card.pop[data-status="doing"] .bar > span { animation: grow .7s var(--ease-ios), stripes 1s linear infinite; }
 .card.pop .status-box { animation: bounce .45s var(--spring); }
 @keyframes grow { from { width: 0; } }
+@keyframes stripes { from { background-position: 0 0, 14px 0, 0 0; } to { background-position: 0 0, 0 0, 0 0; } }
+@keyframes glow { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+/* en cours : les points de la case tournent en rond */
+.spin circle { animation: spin-dot 1.2s linear infinite; }
+@keyframes spin-dot { from { opacity: 1; } to { opacity: .18; } }
 @keyframes bounce { 0% { transform: scale(.82); } 100% { transform: scale(1); } }
 .due, .chip, .when { flex: none; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font: 400 12.5px/1.3 var(--font-ui); color: var(--ink-2); }
 .due .tm { font-weight: 600; font-variant-numeric: tabular-nums; }
 .due.late { color: var(--hi); font-weight: 600; }
 .chip { padding: 2px 9px; border-radius: 999px; background: var(--surface-2); font-size: 12px; }
 
-/* ---------- rappels : effet post-it ---------- */
+/* ---------- rappels : un vrai post-it. Papier jaune doux à coins droits, collé en haut : le bas se soulève
+   (ombre plus forte aux coins du bas) et le coin du bas à droite se replie. Écrit à la main. ---------- */
 .card[data-kind="reminder"] {
-  border: 0; border-radius: 2px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, .22) 0%, rgba(255, 255, 255, 0) 22%), linear-gradient(176deg, var(--note) 0%, var(--note) 55%, var(--note-2) 100%);
+  border: 0; border-radius: 1px; padding: 16px 14px 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .3) 0%, rgba(255, 255, 255, 0) 16%),
+    linear-gradient(315deg, rgba(248, 230, 182, 0) 0 15px, var(--note-2) 15.6px, var(--note) 55%);
   color: var(--note-ink);
-  box-shadow: 0 0 0 .5px rgba(173, 130, 56, .2), 0 1px 1.5px rgba(91, 73, 39, .22), 0 13px 9px -10px rgba(91, 73, 39, .42);
-  rotate: -.6deg;
+  box-shadow: 0 1px 1px rgba(91, 73, 39, .16), 0 12px 9px -10px rgba(91, 73, 39, .36), -9px 15px 12px -13px rgba(91, 73, 39, .42), 10px 16px 13px -12px rgba(91, 73, 39, .48);
+  rotate: -1deg;
 }
-.card[data-kind="reminder"]:nth-child(even) { rotate: .5deg; }
-.card[data-kind="reminder"]::after { content: ""; position: absolute; right: 0; bottom: 0; width: 22px; height: 22px; background: linear-gradient(315deg, rgba(173, 130, 56, .16) 0%, rgba(255, 255, 255, .38) 48%, transparent 50%); pointer-events: none; }
-.card[data-kind="reminder"] .card-title, .card[data-kind="reminder"] .desc-text { color: var(--note-ink); }
-.card[data-kind="reminder"] .subject { background: var(--note-tint); color: var(--note-ink-2); }
-.card[data-kind="reminder"] .more { background: var(--note-tint); }
-.card[data-kind="reminder"] .more[aria-expanded="true"] { background: var(--brand); }
-.card[data-kind="reminder"] .desc { border-top-color: var(--note-line); }
+.card[data-kind="reminder"]:nth-child(even) { rotate: .8deg; }
+/* le coin replié */
+.card[data-kind="reminder"]::after { content: ""; position: absolute; right: 0; bottom: 0; width: 21px; height: 21px; pointer-events: none;
+  background: linear-gradient(315deg, rgba(251, 240, 208, 0) 50%, #fcf2d6 50%, #f0d99a 100%);
+  filter: drop-shadow(-1px -1px 1.2px rgba(91, 73, 39, .3)); }
+.card[data-kind="reminder"] .status-box { border-radius: 2px; }
+.card[data-kind="reminder"] .status-box[data-st="bell"] { background: rgba(255, 255, 255, .3); border: 1.5px solid rgba(91, 73, 39, .3); color: var(--note-ink-2); box-shadow: none; }
+.card[data-kind="reminder"] .status-box[data-st="done"] { background: var(--brand); border-color: var(--brand); }
+/* écriture à la main, soulignée d'un trait tracé au feutre */
+.card[data-kind="reminder"] .card-title { font: 700 24px/1.08 var(--font-hand); color: var(--note-ink); }
+.card[data-kind="reminder"] .card-title::after, .card.is-archived[data-kind="reminder"] .card-title::after { width: 72px; height: 9px; margin-top: 3px; border-radius: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 9'%3E%3Cpath d='M1.5 6C9 2.5 15 2.6 22 4.6S35 7.6 44 4.8 59 1.6 70.5 4.2' fill='none' stroke='rgb(173,130,56)' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat; }
+.card.is-archived[data-kind="reminder"] .card-title { font-weight: 600; color: var(--note-ink-2); }
+.card[data-kind="reminder"] .subject { padding: 0; background: none; border-radius: 0; font: 600 19px/1.2 var(--font-hand); color: var(--note-ink-2); }
+.card[data-kind="reminder"] .desc-text { font: 400 19px/1.35 var(--font-hand); color: var(--note-ink); }
+.card[data-kind="reminder"] .desc-text.is-empty { color: var(--note-ink-2); }
+.card[data-kind="reminder"] .more { background: rgba(91, 73, 39, .08); border-radius: 2px; color: var(--note-ink-2); }
+.card[data-kind="reminder"] .more[aria-expanded="true"] { background: var(--brand); color: var(--on-brand); }
+.card[data-kind="reminder"] .desc { border-top: 1px dashed rgba(91, 73, 39, .3); }
 .card[data-kind="reminder"] .meta { color: var(--note-ink-2); }
-.card[data-kind="reminder"] .urg { background: rgba(255, 255, 255, .6); border-color: var(--note-line); box-shadow: none; }
+.card[data-kind="reminder"] .urg { background: rgba(255, 255, 255, .4); border-color: rgba(91, 73, 39, .22); box-shadow: none; }
 .card[data-kind="reminder"] .bar { display: none; }
 .card[data-kind="reminder"] .due { color: var(--brand); font-weight: 600; }
 .card[data-kind="reminder"] .due.late { color: var(--hi); }
-.card[data-kind="reminder"] .chip { background: var(--note-tint); }
-.card[data-kind="reminder"] .btn { background: rgba(255, 255, 255, .7); border-color: var(--note-line); }
-.card[data-kind="reminder"] .status-box[data-st="done"] { background: var(--brand); }
-.card.is-archived[data-kind="reminder"] { rotate: 0deg; opacity: .9; }
+.card[data-kind="reminder"] .chip { background: rgba(91, 73, 39, .1); }
+.card[data-kind="reminder"] .btn { background: rgba(255, 255, 255, .5); border-color: rgba(91, 73, 39, .25); border-radius: 2px; }
+.card.is-archived[data-kind="reminder"] { rotate: 0deg; opacity: .92; }
 
 /* apparition quand la liste ne peut pas glisser toute seule (anciens navigateurs) */
 .card[data-kind].is-new { animation: card-in .5s var(--spring); }
@@ -347,14 +403,16 @@ input[type="date"].input, input[type="time"].input { font-variant-numeric: tabul
 
 @media (max-width: 380px) {
   body { padding-inline: 12px; }
-  .band { margin-inline: -12px; padding-inline: 12px; }
+  .band { padding-inline: 16px 14px; }
   .card { padding: 12px; }
   .card-top { grid-template-columns: 40px minmax(0, 1fr) 34px; column-gap: 10px; }
   .status-box { width: 40px; height: 40px; }
 }
-@media (min-width: 900px) { .band { padding-block: calc(env(safe-area-inset-top, 0px) + 24px) 22px; } .app { padding-top: 24px; } }
+@media (min-width: 900px) { .band { margin-top: 22px; padding: 22px 22px 20px 26px; } .app { padding-top: 24px; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after, ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; transition: none !important; }
+  /* sans animation, l'urgence haute garde un contour rouge fixe */
+  .card[data-urg="3"]:not(.is-archived):not(.fx-clone)::before { opacity: .8; }
 }
 </style>
 </head>

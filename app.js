@@ -36,8 +36,18 @@
   const svgIco = (name, size, sw) => '<svg class="si" viewBox="0 0 24 24" width="' + (size || 16) + '" height="' + (size || 16) + '" fill="none" stroke="currentColor" stroke-width="' + (sw || 1.75) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + SVG[name] + '</svg>';
   // Niveau d'urgence : pastille verte (basse), jaune (moyenne) ou rouge (haute).
   const dot = n => '<span class="dot" data-urg="' + n + '" aria-hidden="true"></span>';
-  // Case de statut : pas commencée (×), en cours (○), validée (✓) ; un rappel à retenir a une cloche.
-  const STATUS_ICO = { todo: () => svgIco('cross', 20, 2), doing: () => svgIco('ring', 22, 2.4), done: () => svgIco('check', 22, 2.6), bell: () => svgIco('bell', 20, 1.9) };
+  // En cours : huit points en rond qui tournent comme un chargement de jeu (la tête du cercle avance dans le sens des aiguilles d'une montre ;
+  // figés en traînée si l'appareil demande moins d'animations).
+  const spinner = size => {
+    let dots = '';
+    for (let i = 0; i < 8; i++) {
+      const a = i * Math.PI / 4;
+      dots += '<circle cx="' + (12 + 7.5 * Math.sin(a)).toFixed(2) + '" cy="' + (12 - 7.5 * Math.cos(a)).toFixed(2) + '" r="2.05" style="opacity:' + (0.22 + i * 0.11).toFixed(2) + ';animation-delay:' + ((i - 8) * 0.15).toFixed(2) + 's"/>';
+    }
+    return '<svg class="si spin" viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="currentColor" aria-hidden="true" focusable="false">' + dots + '</svg>';
+  };
+  // Case de statut : pas commencée (×), en cours (points qui tournent), validée (✓) ; un rappel à retenir a une cloche.
+  const STATUS_ICO = { todo: () => svgIco('cross', 20, 2), doing: () => spinner(24), done: () => svgIco('check', 22, 2.6), bell: () => svgIco('bell', 20, 1.9) };
 
   /* ================= textes + outils ================= */
   const STATUS = {
