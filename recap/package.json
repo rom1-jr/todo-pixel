@@ -1,5 +1,5 @@
 {
-  "name": "todo-pixel-recap",
+  "name": "todo-list-recap",
   "private": true,
   "description": "Envoie le récap du matin de la to do list sur les appareils abonnés.",
   "type": "module",

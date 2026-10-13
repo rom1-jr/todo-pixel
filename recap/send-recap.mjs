@@ -104,7 +104,7 @@ async function main() {
 
   initializeApp({ credential: cert(account) });
   const db = getFirestore();
-  webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'mailto:todo-pixel@users.noreply.github.com', pub, priv);
+  webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'mailto:todo-list@users.noreply.github.com', pub, priv);
 
   let sent = 0, skipped = 0, removed = 0;
   const users = await db.collection('users').listDocuments();
