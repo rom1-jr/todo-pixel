@@ -1,4 +1,4 @@
-# To Do List Pixel : guide d'installation
+# To Do List : guide d'installation
 
 À la fin de ce guide, l'appli est sur l'écran d'accueil de l'iPhone et dans une fenêtre rangée sur le côté de l'écran du PC, avec la même liste sur les deux. Compte environ 45 minutes la première fois.
 
@@ -12,7 +12,7 @@ Les étapes marquées **clé secrète** utilisent des clés à ne montrer à per
 
 1. Télécharge `todo-pixel.zip` sur le PC.
 2. Clic droit → **Extraire tout…** → **Extraire**.
-3. Ouvre le dossier `todo-pixel` : il contient `index.html`, `config.js`, `firestore.rules`, les dossiers `icons`, `fonts`, `vendor`, `recap`, `outils` et `.github`.
+3. Ouvre le dossier `todo-pixel` : il contient `index.html`, `config.js`, `firestore.rules`, les dossiers `icons`, `vendor`, `recap`, `outils` et `.github`.
 
 ## Partie 2 — Mettre l'appli en ligne avec GitHub
 
@@ -66,7 +66,7 @@ Ouvre-la toujours depuis l'icône, pas depuis Safari.
 ## Partie 6 — Installer l'appli sur le PC et la ranger sur le côté
 
 1. **Edge** → <https://rom1-jr.github.io/todo-pixel/> → connecte-toi avec le même compte.
-2. Icône **Application disponible** dans la barre d'adresse → **Installer** (ou **…** → **Applications** → **Installer To Do List Pixel**).
+2. Icône **Application disponible** dans la barre d'adresse → **Installer** (ou **…** → **Applications** → **Installer To Do List**).
 3. Clic droit sur son icône dans la barre des tâches → **Épingler à la barre des tâches**.
 4. Colle la fenêtre au bord droit de l'écran (**Windows + flèche droite**) et rétrécis-la en tirant son bord gauche. Edge retient sa taille et sa place.
 5. Option, toujours au premier plan : **PowerToys** (Microsoft Store) → **Always On Top** → **Windows + Ctrl + T** dans l'appli.
@@ -116,16 +116,15 @@ Dans l'appli ouverte depuis l'icône : **Réglages** (en haut à droite) → heu
 
 ## Au quotidien
 
-- **Ajout rapide** : écris dans le champ en haut de la liste puis **Entrée**. Une date (« demain », « lundi », « 15/10 ») devient l'échéance, une heure (« 14h », « 9h30 ») crée un rappel, un « ! » seul met la priorité haute. Exemple : `Rappeler le fournisseur demain 14h`. **Détails** ouvre le formulaire complet.
-- **Organisation** : la liste est rangée en *En retard*, *Aujourd'hui*, *À venir* et *Sans échéance*, la priorité haute en premier.
-- **Terminer** : coche le rond à gauche (**Annuler** juste après si besoin). Le bouton **…** sert à commencer une tâche, changer sa priorité ou son échéance, reporter un rappel, modifier ou supprimer.
-- **Pro / Perso / Tout** : le filtre est retenu sur chaque appareil. Choisis **Pro** sur le PC du bureau pour ne voir que le travail.
-- **Alertes des rappels** : réglages → **Activer les alertes ici**. La notification s'affiche à l'heure tant que l'appli est ouverte (sur le PC, garde-la sur le côté de l'écran). Le récap du matin liste aussi les rappels du jour.
-- **Style** : réglages → **Apparence**. *Bureau* (sobre, par défaut) ou *Aventure* (pixel art). Le choix vaut pour l'appareil.
-- **Raccourcis sur PC** : **N** pour écrire une nouvelle tâche, **Échap** pour vider le champ ou fermer.
+- **Une carte par tâche** : à gauche, la case de statut (× pas commencée, points qui tournent en cours, ✓ validée) ; au centre, le titre et l'objet ; à droite, **+** qui déroule la description et les boutons Modifier / Supprimer. En bas de la carte : la pastille d'urgence (verte, jaune ou rouge), l'objet et l'échéance. Les rappels sont des post-it écrits à la main.
+- **Urgence haute** : le contour de la carte bat comme un cœur, pour la repérer d'un coup d'œil.
+- **Valider** : case de statut → **Validée**. La tâche éclate comme une bulle et part aux archives ; un rappel classé se déchire comme un post-it. **Voir les archives** en bas de l'écran (**Remettre dans la liste** si besoin).
+- **Ajouter** : bouton **+** sous la liste (ou touche **N** sur PC). Dans le titre, une date (« demain », « lundi », « 15/10 ») devient l'échéance, une heure (« 14h », « 9h30 ») crée un rappel, un « ! » seul met l'urgence haute. Exemple : `Rappeler le fournisseur demain 14h`.
+- **Ordre de la liste** : ce qui est en retard d'abord, puis l'urgence, puis l'échéance la plus proche.
+- **Pro / Perso / Tout** : réglages → **Affichage sur cet appareil**. Choisis **Pro** sur le PC du bureau pour ne voir que le travail.
+- **Rappels** : réglages → **Activer les alertes ici**. La notification s'affiche à l'heure tant que l'appli est ouverte (sur le PC, garde-la sur le côté de l'écran). Un rappel se reporte d'1 h ou à demain 9 h depuis sa carte (**+**). Le récap du matin liste aussi les rappels du jour.
 
 ## Bon à savoir
 
 - **Tes données** sont dans Firestore et les règles réservent l'accès à ton compte. Le code de ce dépôt est public, tes tâches non.
 - **Hors ligne**, l'appli s'ouvre quand même et envoie tes changements au retour du réseau.
-- **Polices** : style Bureau en Segoe UI (police de Windows, celle de la charte), police système sur iPhone ; style Aventure en Press Start 2P, Pixelify Sans et Jacquard 24, sous licence SIL Open Font License (voir `fonts/`).

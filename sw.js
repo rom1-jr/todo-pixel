@@ -1,5 +1,5 @@
 /* Service worker : appli disponible hors ligne, notifications du récap du matin et des rappels. */
-const CACHE = 'todo-pixel-v3';
+const CACHE = 'todo-list-v7';
 const SHELL = [
   './',
   './index.html',
@@ -7,17 +7,14 @@ const SHELL = [
   './config.js',
   './vendor/firebase.js',
   './manifest.webmanifest',
+  './fonts/montserrat-latin.woff2',
+  './fonts/caveat-latin.woff2',
+  './icons/logo-exosens-blanc.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',
   './icons/favicon-32.png',
-  './icons/badge-72.png',
-  './fonts/press-start-2p-latin-400-normal.woff2',
-  './fonts/pixelify-sans-latin-400-normal.woff2',
-  './fonts/pixelify-sans-latin-500-normal.woff2',
-  './fonts/pixelify-sans-latin-600-normal.woff2',
-  './fonts/pixelify-sans-latin-700-normal.woff2',
-  './fonts/jacquard-24-latin-400-normal.woff2'
+  './icons/badge-72.png'
 ];
 // Fichiers qui changent quand on met l'appli à jour : réseau d'abord, cache si hors ligne.
 const FRESH = ['/', '/index.html', '/app.js', '/config.js'];
