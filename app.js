@@ -1,5 +1,6 @@
 /* To do list (PWA) — organisation du croquis : une carte par tâche (case de statut, titre, objet, + pour la description,
-   niveau d'urgence et barre de statut), bouton + pour ajouter, archives en bas. Couleurs de la charte graphique.
+   étapes, pastille d'urgence, échéance), bouton + pour ajouter, archives en bas. Couleurs de la charte graphique.
+   Vue « Aujourd'hui », tâches qui se répètent, étapes à cocher, balayage sur téléphone (valider / reporter à demain).
    Synchro via Firebase quand config.js est rempli, via la base de la page quand elle tourne dans Claude,
    sinon mode local (tâches gardées dans le navigateur). */
 (() => {
@@ -31,7 +32,9 @@
     trash: '<path d="M5 7h14M10 7V4.5h4V7M7 7l1 12.5h8L17 7"/>',
     pencil: '<path d="M5 19l.8-3.6L15.6 5.6a1.5 1.5 0 0 1 2.1 0l.7.7a1.5 1.5 0 0 1 0 2.1L8.6 18.2z"/>',
     undo: '<path d="M9 14.5L4.5 10 9 5.5"/><path d="M4.5 10H14a5 5 0 0 1 0 10h-3"/>',
-    clock: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4.5l3 2"/>'
+    clock: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4.5l3 2"/>',
+    repeat: '<path d="M16.5 3.5L19.5 6.5 16.5 9.5"/><path d="M4.5 11.5V9.5a3 3 0 0 1 3-3h12"/><path d="M7.5 20.5L4.5 17.5 7.5 14.5"/><path d="M19.5 12.5v2a3 3 0 0 1-3 3h-12"/>',
+    steps: '<path d="M4 6.5l1.6 1.6L8.8 5"/><path d="M11.5 7H20"/><path d="M4 13.5l1.6 1.6 3.2-3.1"/><path d="M11.5 14H20"/><path d="M11.5 20H20"/><path d="M5.2 20h1.4"/>'
   };
   const svgIco = (name, size, sw) => '<svg class="si" viewBox="0 0 24 24" width="' + (size || 16) + '" height="' + (size || 16) + '" fill="none" stroke="currentColor" stroke-width="' + (sw || 1.75) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + SVG[name] + '</svg>';
   // Niveau d'urgence : pastille verte (basse), jaune (moyenne) ou rouge (haute).
@@ -130,6 +133,30 @@
     const clean = w => w.replace(/[,;.!?]+$/, '');
     // 1. priorité : « ! » (ou « !! ») tout seul
     low.forEach((w, i) => { if (/^!{1,3}$/.test(w)) { urg = 3; used[i] = true; } });
+    // 1 bis. répétition : « tous les jours », « chaque semaine », « tous les lundis », « en semaine », « chaque mois »…
+    let repeat = null;
+    const REP = [
+      [['tous', 'les', 'jours'], 'day'], [['chaque', 'jour'], 'day'], [['quotidien'], 'day'], [['quotidiennement'], 'day'],
+      [['en', 'semaine'], 'workday'], [['jours', 'ouvres'], 'workday'], [['jours', 'ouvrables'], 'workday'], [['du', 'lundi', 'au', 'vendredi'], 'workday'],
+      [['toutes', 'les', 'semaines'], 'week'], [['chaque', 'semaine'], 'week'], [['hebdo'], 'week'], [['hebdomadaire'], 'week'],
+      [['tous', 'les', 'mois'], 'month'], [['chaque', 'mois'], 'month'], [['mensuel'], 'month']
+    ];
+    for (let i = 0; i < words.length && !repeat; i++) {
+      for (const [seq, r] of REP) {
+        if (seq.every((x, k) => i + k < words.length && !used[i + k] && clean(low[i + k]) === x)) { repeat = r; seq.forEach((x, k) => { used[i + k] = true; }); break; }
+      }
+      if (repeat) break;
+      const w0 = clean(low[i]);
+      if (w0 === 'chaque' || (w0 === 'tous' && i + 1 < words.length && clean(low[i + 1]) === 'les')) {
+        const j = w0 === 'chaque' ? i + 1 : i + 2;
+        const wd = j < words.length ? WD.indexOf(clean(low[j]).replace(/s$/, '')) : -1;
+        if (wd >= 0) {
+          repeat = 'week';
+          due = weekdayOf(today) === wd ? today : nextWeekday(today, wd);
+          for (let k = i; k <= j; k++) used[k] = true;
+        }
+      }
+    }
     // 2. dates
     for (let i = 0; i < words.length && !due; i++) {
       if (used[i]) continue;
@@ -175,14 +202,36 @@
       if (prefixed) used[i - 1] = true;
     }
     if (time && !due) due = time > hm ? today : addDays(today, 1);
+    if (repeat && !due) due = today;
+    if (repeat === 'workday' && due) while (weekdayOf(due) === 0 || weekdayOf(due) === 6) due = addDays(due, 1);
     let title = words.filter((w, i) => !used[i]).join(' ').replace(/\s+([,;.!?])/g, '$1').replace(/^[\s,;:–-]+|[\s,;:–-]+$/g, '').trim();
     if (!title) title = String(text || '').trim();
-    return { title: title, due: due, time: time, kind: time ? 'reminder' : 'task', urg: urg };
+    return { title: title, due: due, time: time, kind: time ? 'reminder' : 'task', urg: urg, repeat: repeat };
+  }
+  // Répétition : chaque jour, en semaine (lun.–ven.), chaque semaine, chaque mois.
+  const REPEAT = { day: 'tous les jours', workday: 'en semaine', week: 'chaque semaine', month: 'chaque mois' };
+  // Prochaine date d'une tâche qui se répète : un pas après l'échéance (ou aujourd'hui), et toujours après aujourd'hui.
+  function nextDue(due, repeat, today) {
+    const from = isISO(due) ? due : today;
+    const want = Number(from.slice(8, 10));
+    const step = iso => {
+      if (repeat === 'day') return addDays(iso, 1);
+      if (repeat === 'workday') { let n = addDays(iso, 1); while (weekdayOf(n) === 0 || weekdayOf(n) === 6) n = addDays(n, 1); return n; }
+      if (repeat === 'week') return addDays(iso, 7);
+      // chaque mois : même jour le mois suivant (le 31 devient le dernier jour d'un mois plus court)
+      const p = isoParts(iso);
+      const last = new Date(Date.UTC(p[0], p[1] + 1, 0)).getUTCDate();
+      return isoOfUTC(Date.UTC(p[0], p[1], Math.min(want, last)));
+    };
+    let d = from, guard = 0;
+    do { d = step(d); } while (d <= today && guard++ < 2000);
+    return d;
   }
   // Jour et heure de l'appareil (fuseau TZ) : « 2026-10-13 » et « 14:05 ».
   const isoFmt = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' });
   const hmFmt = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
-  const todayISO = () => { const p = Object.fromEntries(isoFmt.formatToParts(new Date()).map(x => [x.type, x.value])); return p.year + '-' + p.month + '-' + p.day; };
+  const isoOfMs = ms => { const p = Object.fromEntries(isoFmt.formatToParts(new Date(ms)).map(x => [x.type, x.value])); return p.year + '-' + p.month + '-' + p.day; };
+  const todayISO = () => isoOfMs(Date.now());
   const nowHM = () => hmFmt.format(new Date()).replace(/^24/, '00');
   const minutesOf = hm => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
   // Ajoute des minutes à un jour + heure, arrondi aux 5 minutes suivantes (pour « Reporter d'1 h »).
@@ -195,13 +244,14 @@
 
   /* ================= état ================= */
   // Réglages propres à cet appareil : tâches affichées (pro / perso / all), alertes, valeurs par défaut.
-  const prefs = Object.assign({ cat: 'pro', urg: 2, kind: 'task', hour: 7, filter: 'all', alerts: false }, lsGet('todo-prefs', {}));
+  const prefs = Object.assign({ cat: 'pro', urg: 2, kind: 'task', hour: 7, filter: 'all', alerts: false, day: 'all' }, lsGet('todo-prefs', {}));
   delete prefs.style;
   const savePrefs = () => lsSet('todo-prefs', prefs);
   const S = {
     tasks: new Map(), view: 'tasks', expanded: new Set(), leaving: new Set(), fresh: new Set(),
     loaded: false, mode: FIREBASE_READY ? 'firebase' : (IN_CLAUDE ? 'claude' : 'local'), user: null, authChecked: !FIREBASE_READY,
     filter: ['pro', 'perso', 'all'].includes(prefs.filter) ? prefs.filter : 'all',
+    day: prefs.day === 'today' ? 'today' : 'all',
     vt: false, pop: null, toggled: null
   };
 
@@ -223,12 +273,15 @@
       cat: d.cat === 'perso' ? 'perso' : 'pro',
       urg: [1, 2, 3].includes(Number(d.urg)) ? Number(d.urg) : 2,
       due: due, time: time,
+      repeat: !archived && REPEAT[d.repeat] ? d.repeat : null,
+      steps: Array.isArray(d.steps) ? d.steps.filter(x => x && typeof x.t === 'string' && x.t.trim()).slice(0, 30).map(x => ({ t: x.t.trim().slice(0, 120), d: x.d === true })) : [],
       status: status, archived: archived,
       createdAt: Number(d.createdAt) || 0, updatedAt: Number(d.updatedAt) || 0, archivedAt: Number(d.archivedAt) || 0
     };
   }
   const toDoc = t => ({
     kind: t.kind, title: t.title, subject: t.subject, desc: t.desc, cat: t.cat, urg: t.urg, due: t.due || null, time: t.time || null,
+    repeat: t.repeat || null, steps: t.steps || [],
     status: t.status, archived: t.archived, createdAt: t.createdAt, updatedAt: t.updatedAt, archivedAt: t.archivedAt || null
   });
 
@@ -372,7 +425,8 @@
     commit(next);
     S.fresh.add(id);
     renderAnimated();
-    Store.patch(id, { kind: next.kind, title: next.title, subject: next.subject, desc: next.desc, cat: next.cat, urg: next.urg, due: next.due, time: next.time, status: next.status, updatedAt: next.updatedAt });
+    Store.patch(id, { kind: next.kind, title: next.title, subject: next.subject, desc: next.desc, cat: next.cat, urg: next.urg, due: next.due, time: next.time,
+      repeat: next.repeat, steps: next.steps, status: next.status, updatedAt: next.updatedAt });
     toast(next.kind === 'reminder' ? 'Rappel modifié.' : 'Tâche modifiée.');
   }
   function setStatus(id, status) {
@@ -404,6 +458,42 @@
     renderAnimated();
     Store.patch(id, { due: next.due, time: next.time, updatedAt: next.updatedAt });
     toast(next.due ? 'Rappel reporté à ' + whenWords(next) + '.' : 'Rappel sans date.');
+  }
+  // Tâche reportée à demain (un rappel, lui, passe à demain 9 h).
+  function postpone(id) {
+    const t = S.tasks.get(id);
+    if (!t) return;
+    if (t.kind === 'reminder') { snooze(id, 'tomorrow'); return; }
+    const due = addDays(todayISO(), 1);
+    const next = normalize(id, Object.assign({}, t, { due: due }));
+    commit(next);
+    S.fresh.add(id);
+    renderAnimated();
+    Store.patch(id, { due: due, updatedAt: next.updatedAt });
+    toast('Tâche reportée à demain.');
+  }
+  // Étape cochée ou décochée.
+  function toggleStep(id, i) {
+    const t = S.tasks.get(id);
+    if (!t || !t.steps[i]) return;
+    const steps = t.steps.map((x, k) => k === i ? { t: x.t, d: !x.d } : x);
+    const next = Object.assign({}, t, { steps: steps });
+    commit(next);
+    render();
+    Store.patch(id, { steps: steps, updatedAt: next.updatedAt });
+  }
+  // Tâche ou rappel qui se répète : une trace part aux archives et la carte revient à la prochaine date, étapes décochées.
+  function completeRecurring(cur) {
+    const now = Date.now();
+    const hist = normalize(newId(), Object.assign({}, cur, { status: 'done', archived: true, archivedAt: now, repeat: null, updatedAt: now }));
+    S.tasks.set(hist.id, hist);
+    Store.put(hist);
+    const due = nextDue(cur.due, cur.repeat, todayISO());
+    const next = normalize(cur.id, Object.assign({}, cur, { due: due, status: 'todo', steps: cur.steps.map(x => ({ t: x.t, d: false })) }));
+    commit(next);
+    S.fresh.add(cur.id);
+    renderAnimated(focusAfterRemoval);
+    Store.patch(cur.id, { due: due, status: 'todo', steps: next.steps, updatedAt: next.updatedAt });
   }
   function snooze(id, mode) {
     const today = todayISO();
@@ -458,7 +548,8 @@
       setTimeout(() => { a.c.remove(); b.c.remove(); done(); }, 820);
     });
   }
-  function validate(id) {
+  // noFx : la carte est déjà partie (balayage), pas de bulle ni de post-it déchiré.
+  function validate(id, noFx) {
     const t = S.tasks.get(id);
     if (!t || S.leaving.has(id)) return;
     const card = cardEl(id);
@@ -466,12 +557,13 @@
       S.leaving.delete(id);
       const cur = S.tasks.get(id);
       if (!cur) { render(); return; }
+      if (cur.repeat) { completeRecurring(cur); return; }
       const next = Object.assign({}, cur, { status: 'done', archived: true, archivedAt: Date.now() });
       commit(next);
       renderAnimated(focusAfterRemoval);
       Store.patch(id, { status: 'done', archived: true, archivedAt: next.archivedAt, updatedAt: next.updatedAt });
     };
-    if (!card || reduced()) { finish(); return; }
+    if (!card || reduced() || noFx) { finish(); return; }
     S.leaving.add(id);
     (t.kind === 'reminder' ? tearNote(card) : popBubble(card)).then(finish);
   }
@@ -515,7 +607,8 @@
     authView: $('#view-auth'), tasksView: $('#view-tasks'), archiveView: $('#view-archive'),
     list: $('#task-list'), archive: $('#archive-list'), addRow: $('#add-row'), addBtn: $('#add-btn'),
     modeNote: $('#mode-note'), modeNoteText: $('#mode-note-text'), bottomBar: $('#bottom-bar'),
-    toArchive: $('#to-archive'), toTasks: $('#to-tasks'), archiveCount: $('#archive-count')
+    toArchive: $('#to-archive'), toTasks: $('#to-tasks'), archiveCount: $('#archive-count'),
+    views: $('#views'), vToday: $('#v-today'), vAll: $('#v-all'), vTodayN: $('#v-today-n'), vAllN: $('#v-all-n'), vRing: $('#v-ring')
   };
   els.addBtn.innerHTML = svgIco('plus', 24, 2.2);
   $('#settings-btn').innerHTML = svgIco('sliders', 20);
@@ -536,6 +629,12 @@
       (key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0) || (a.createdAt - b.createdAt));
   }
 
+  // Adresses web de la description rendues cliquables (ticket GLPI, page intranet…).
+  const linkify = text => esc(text).replace(/https?:\/\/[^\s<]+/g, m => {
+    const trail = (m.match(/[.,;:!?)\]]+$/) || [''])[0];
+    const url = m.slice(0, m.length - trail.length);
+    return '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + url + '</a>' + trail;
+  });
   // Une carte par tâche, comme sur le croquis.
   function cardHTML(t, archived, today, hm) {
     const open = S.expanded.has(t.id);
@@ -558,14 +657,19 @@
     const urg = archived
       ? '<span class="urg" data-urg="' + t.urg + '" role="img" title="' + urgLabel + '" aria-label="' + urgLabel + '">' + dot(t.urg) + '</span>'
       : '<button type="button" class="urg" data-urg="' + t.urg + '" data-act="urg" aria-haspopup="menu" aria-expanded="false" title="' + urgLabel + '" aria-label="' + esc(urgLabel + ' pour ' + what + '. Changer l\'urgence') + '">' + dot(t.urg) + '</button>';
-    let tail = '';
+    const doneSteps = t.steps.filter(x => x.d).length;
+    let tail = t.steps.length ? '<span class="steps-chip' + (doneSteps === t.steps.length ? ' is-done' : '') + '" title="Étapes faites" aria-label="' + doneSteps + ' étape' + (doneSteps > 1 ? 's' : '') + ' faite' + (doneSteps > 1 ? 's' : '') + ' sur ' + t.steps.length + '">' + svgIco('steps', 14) + '<span aria-hidden="true">' + doneSteps + '/' + t.steps.length + '</span></span>' : '';
+    const rep = t.repeat ? '<span class="rep" title="Se répète ' + REPEAT[t.repeat] + '" aria-label="se répète ' + REPEAT[t.repeat] + '">' + svgIco('repeat', 13) + '</span>' : '';
     if (archived) tail += '<span class="when">' + (isR ? 'Classé ' : 'Validée ') + when(t.archivedAt) + '</span>';
-    else if (t.due) tail += '<span class="due' + (late ? ' late' : '') + '">' + svgIco(isR ? 'bell' : 'cal', 14) + '<span>' + esc(dayLabel(t.due, today)) + '</span>' + (t.time ? '<span class="tm">' + t.time + '</span>' : '') + '</span>';
+    else if (t.due) tail += '<span class="due' + (late ? ' late' : '') + '">' + svgIco(isR ? 'bell' : 'cal', 14) + '<span>' + esc(dayLabel(t.due, today)) + '</span>' + (t.time ? '<span class="tm">' + t.time + '</span>' : '') + rep + '</span>';
+    else if (rep) tail += rep;
     if (S.filter === 'all' && t.cat === 'perso') tail += '<span class="chip">Perso</span>';
+    const steps = t.steps.length ? '<ul class="steps">' + t.steps.map((x, i) => '<li><button type="button" class="step' + (x.d ? ' is-done' : '') + '" data-act="step" data-i="' + i + '" role="checkbox" aria-checked="' + x.d + '"' + (archived ? ' disabled' : '') + '><span class="step-box">' + svgIco('check', 13, 3) + '</span><span class="step-t">' + esc(x.t) + '</span></button></li>').join('') + '</ul>' : '';
     const act = (name, ico, label, extra, text) => '<button type="button" class="act' + (extra || '') + '" data-act="' + name + '" title="' + esc(label) + '" aria-label="' + esc(label + ' : ' + what) + '">' + svgIco(ico, 16) + (text ? '<span>' + text + '</span>' : '') + '</button>';
     const actions = archived
       ? act('restore', 'undo', 'Remettre dans la liste', '') + act('delete', 'trash', 'Supprimer', ' act-danger')
       : (isR && t.due ? act('snooze', 'clock', 'Reporter d\'1 h', ' act-txt', '+1 h') + act('tomorrow', 'cal', 'Reporter à demain 9 h', ' act-txt', 'Demain') : '') +
+        (!isR ? act('later', 'cal', 'Reporter à demain', ' act-txt', 'Demain') : '') +
         act('edit', 'pencil', 'Modifier', '') + act('delete', 'trash', 'Supprimer', ' act-danger');
     return '<article class="' + cls + '" style="' + style + '" data-id="' + esc(t.id) + '" data-kind="' + t.kind + '" data-status="' + st + '" data-urg="' + t.urg + '" data-cat="' + t.cat + '">' +
       '<div class="card-top">' + status +
@@ -574,7 +678,7 @@
       '</div>' +
       (!isR && t.subject ? '<p class="card-subject">' + esc(t.subject) + '</p>' : '') +
       '<div class="desc-wrap" id="d-' + esc(t.id) + '"' + (open ? '' : ' inert') + '><div class="desc-clip"><div class="desc">' +
-        (t.desc ? '<p class="desc-text">' + esc(t.desc) + '</p>' : '<p class="desc-text is-empty">Pas de description.</p>') +
+        steps + (t.desc ? '<p class="desc-text">' + linkify(t.desc) + '</p>' : (steps ? '' : '<p class="desc-text is-empty">Pas de description.</p>')) +
         '<div class="desc-row"><p class="meta">' + (isR ? 'Créé ' : 'Créée ') + when(t.createdAt) + '</p>' +
         '<div class="desc-actions">' + actions + '</div></div>' +
       '</div></div></div>' +
@@ -582,6 +686,7 @@
     '</article>';
   }
   function emptyHTML(kind, hidden) {
+    if (kind === 'today') return '<div class="empty"><p class="empty-title">Rien d\'autre pour aujourd\'hui</p><p>Ce qui est prévu plus tard ou sans date est dans « Tout ».</p></div>';
     if (kind === 'archive') return '<div class="empty"><p class="empty-title">Archives vides</p><p>Les tâches validées et les rappels classés arrivent ici, avec la date.</p></div>';
     if (hidden) return '<div class="empty"><p class="empty-title">Rien en ' + CAT[S.filter].label + ' pour l\'instant</p><p>' + plural(hidden, 'élément') + ' ' + (S.filter === 'pro' ? 'perso' : 'pro') + (hidden > 1 ? ' sont masqués' : ' est masqué') + ' (réglages, Affichage sur cet appareil).</p></div>';
     return '<div class="empty"><p class="empty-title">Rien à faire pour l\'instant</p><p>Ajoute une tâche ou un rappel avec le bouton +.</p></div>';
@@ -633,7 +738,20 @@
       if (rem) parts.push(plural(rem, 'rappel'));
       setSub(parts, late ? late + ' en retard' : '');
       const hidden = everything.filter(t => !t.archived && !inFilter(t)).length;
-      els.list.innerHTML = current.length ? sortTasks(current, today, hm).map(t => cardHTML(t, false, today, hm)).join('') : emptyHTML('tasks', hidden);
+      // Aujourd'hui : daté d'aujourd'hui ou en retard, ou en cours ; l'anneau montre ce qui est déjà fait aujourd'hui.
+      const forToday = current.filter(t => (t.due && t.due <= today) || t.status === 'doing');
+      const doneToday = archived.filter(t => t.archivedAt && isoOfMs(t.archivedAt) === today).length;
+      const totalToday = forToday.length + doneToday;
+      els.vToday.setAttribute('aria-pressed', String(S.day === 'today'));
+      els.vAll.setAttribute('aria-pressed', String(S.day !== 'today'));
+      els.vTodayN.textContent = String(forToday.length);
+      els.vAllN.textContent = String(current.length);
+      els.vRing.style.setProperty('--p', totalToday ? (doneToday / totalToday).toFixed(3) : '0');
+      els.vRing.title = doneToday + ' fait' + (doneToday > 1 ? 's' : '') + ' aujourd\'hui sur ' + totalToday;
+      els.views.hidden = !current.length && !doneToday;
+      const shown = S.day === 'today' ? forToday : current;
+      els.list.innerHTML = shown.length ? sortTasks(shown, today, hm).map(t => cardHTML(t, false, today, hm)).join('')
+        : (S.day === 'today' && current.length ? emptyHTML('today') : emptyHTML('tasks', hidden));
       els.addRow.hidden = false;
       if (S.mode === 'local') {
         els.modeNote.hidden = false;
@@ -658,12 +776,12 @@
     const a = document.activeElement;
     if (!a || !a.dataset || !a.dataset.act) return null;
     const card = a.closest('.card');
-    return card ? { id: card.dataset.id, act: a.dataset.act } : null;
+    return card ? { id: card.dataset.id, act: a.dataset.act, i: a.dataset.i } : null;
   }
   function restoreFocus(f) {
     if (!f) return;
     const card = cardEl(f.id);
-    const el = card && card.querySelector('[data-act="' + f.act + '"]');
+    const el = card && card.querySelector('[data-act="' + f.act + '"]' + (f.i != null ? '[data-i="' + f.i + '"]' : ''));
     if (el && el !== document.activeElement) el.focus({ preventScroll: true });
   }
   function focusAfterRemoval() {
@@ -815,6 +933,10 @@
       snooze(id, '1h');
     } else if (act === 'tomorrow') {
       snooze(id, 'tomorrow');
+    } else if (act === 'later') {
+      postpone(id);
+    } else if (act === 'step') {
+      toggleStep(id, Number(btn.dataset.i));
     }
   }
   els.list.addEventListener('click', onListClick);
@@ -826,8 +948,93 @@
     window.scrollTo(0, 0);
     (view === 'archive' ? els.toTasks : els.toArchive).focus({ preventScroll: true });
   }
+  // Aujourd'hui ou Tout (retenu sur cet appareil).
+  function setDay(day) {
+    if (S.day === day) return;
+    S.day = day; prefs.day = day; savePrefs();
+    renderAnimated();
+  }
+  els.vToday.addEventListener('click', () => setDay('today'));
+  els.vAll.addEventListener('click', () => setDay('all'));
   els.toArchive.addEventListener('click', () => switchView('archive'));
   els.toTasks.addEventListener('click', () => switchView('tasks'));
+
+  /* ================= balayage sur téléphone : vers la droite pour valider, vers la gauche pour reporter à demain ================= */
+  (() => {
+    let sw = null;
+    const width = c => c.getBoundingClientRect().width;
+    function begin(s) {
+      const t = S.tasks.get(s.id);
+      if (!t) return false;
+      closeMenu(false);
+      s.card.classList.add('is-swiping');
+      const bg = document.createElement('div');
+      bg.className = 'swipe-bg';
+      bg.dataset.kind = t.kind;
+      bg.setAttribute('aria-hidden', 'true');
+      bg.innerHTML = '<span class="sw-done">' + svgIco('check', 22, 2.4) + '<b>' + (t.kind === 'reminder' ? 'Classer' : 'Valider') + '</b></span>' +
+        '<span class="sw-later"><b>Demain</b>' + svgIco('cal', 20) + '</span>';
+      bg.style.top = s.card.offsetTop + 'px';
+      bg.style.height = s.card.offsetHeight + 'px';
+      s.card.parentElement.append(bg);
+      s.bg = bg;
+      return true;
+    }
+    function move(s) {
+      const w = width(s.card);
+      const dx = Math.max(-w, Math.min(w, s.dx));
+      s.card.style.transform = 'translateX(' + dx + 'px) rotate(' + (dx / w * 2.5).toFixed(2) + 'deg)';
+      s.bg.dataset.dir = dx >= 0 ? 'done' : 'later';
+      s.bg.classList.toggle('armed', Math.abs(dx) > w * 0.3);
+    }
+    function settle(s, to, after) {
+      s.card.style.transition = 'transform .28s cubic-bezier(.32, .72, 0, 1), opacity .28s ease';
+      s.card.style.transform = to;
+      if (to !== '') s.card.style.opacity = '0';
+      setTimeout(() => {
+        s.bg.remove();
+        s.card.classList.remove('is-swiping');
+        s.card.style.transition = s.card.style.transform = s.card.style.opacity = '';
+        if (after) after();
+      }, 290);
+    }
+    function finish(s) {
+      const w = width(s.card), id = s.id;
+      if (s.dx > w * 0.3) settle(s, 'translateX(' + (w + 40) + 'px) rotate(4deg)', () => validate(id, true));
+      else if (s.dx < -w * 0.3) settle(s, 'translateX(' + (-w - 40) + 'px) rotate(-4deg)', () => postpone(id));
+      else settle(s, '');
+    }
+    els.list.addEventListener('pointerdown', e => {
+      if (e.pointerType !== 'touch' || sw) return;
+      const card = e.target.closest('.card');
+      if (!card || card.classList.contains('is-archived') || S.leaving.has(card.dataset.id) || e.target.closest('.desc-wrap')) return;
+      sw = { card: card, id: card.dataset.id, x0: e.clientX, y0: e.clientY, dx: 0, on: false, pid: e.pointerId };
+    });
+    els.list.addEventListener('pointermove', e => {
+      if (!sw || e.pointerId !== sw.pid) return;
+      const dx = e.clientX - sw.x0, dy = e.clientY - sw.y0;
+      if (!sw.on) {
+        if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { sw = null; return; }
+        if (Math.abs(dx) < 14) return;
+        if (!begin(sw)) { sw = null; return; }
+        sw.on = true;
+      }
+      sw.dx = dx;
+      move(sw);
+    });
+    const stop = e => {
+      if (!sw || e.pointerId !== sw.pid) return;
+      const s = sw; sw = null;
+      if (!s.on) return;
+      // pas de clic sur un bouton de la carte à la fin du geste
+      const block = ev => { ev.stopPropagation(); ev.preventDefault(); };
+      document.addEventListener('click', block, { capture: true, once: true });
+      setTimeout(() => document.removeEventListener('click', block, { capture: true }), 400);
+      if (e.type === 'pointercancel') settle(s, ''); else finish(s);
+    };
+    els.list.addEventListener('pointerup', stop);
+    els.list.addEventListener('pointercancel', stop);
+  })();
 
   /* ================= fenêtres ================= */
   const openDlg = d => { if (typeof d.showModal === 'function') d.showModal(); else d.setAttribute('open', ''); };
@@ -850,6 +1057,7 @@
   const form = $('#task-form');
   const fTitle = $('#f-title'), fSubject = $('#f-subject'), fDesc = $('#f-desc'), fErr = $('#f-title-err'), fParse = $('#f-parse');
   const fDue = $('#f-due'), fTime = $('#f-time'), fWhenLegend = $('#f-when-legend'), fQuickDates = $('#f-quick-dates');
+  const fRepeat = $('#f-repeat'), fSteps = $('#f-steps');
   let editingId = null;
   const formKind = () => ($('#f-kind-reminder').checked ? 'reminder' : 'task');
   function syncDialogTitle() {
@@ -886,13 +1094,14 @@
     const v = fTitle.value.trim();
     if (!v || fDue.value) return null;
     const q = parseQuick(v, todayISO(), nowHM());
-    return q.due || q.urg ? q : null;
+    return q.due || q.urg || q.repeat ? q : null;
   }
   function syncParse() {
     const q = titleParse();
     if (!q) { fParse.hidden = true; fParse.textContent = ''; return; }
     const bits = [];
     if (q.due) bits.push((q.kind === 'reminder' ? 'rappel ' : 'échéance ') + lowFirst(dayLabel(q.due, todayISO())) + (q.time ? ' à ' + q.time : ''));
+    if (q.repeat) bits.push(REPEAT[q.repeat]);
     if (q.urg === 3) bits.push('urgence haute');
     fParse.innerHTML = 'Compris : <b>' + esc(bits.join(', ')) + '</b>, titre « ' + esc(q.title) + ' »';
     fParse.hidden = false;
@@ -906,6 +1115,8 @@
     fTitle.value = t ? t.title : '';
     fSubject.value = t ? t.subject : '';
     fDesc.value = t ? t.desc : '';
+    fRepeat.value = t && t.repeat ? t.repeat : '';
+    fSteps.value = t ? t.steps.map(x => x.t).join('\n') : '';
     const kind = t ? t.kind : prefs.kind;
     const cat = t ? t.cat : (S.filter !== 'all' ? S.filter : prefs.cat);
     const urg = t ? t.urg : prefs.urg;
@@ -942,14 +1153,21 @@
     let due = isISO(fDue.value) ? fDue.value : null;
     let time = due && isHM(fTime.value) ? fTime.value : null;
     const q = titleParse();
+    let repeat = REPEAT[fRepeat.value] ? fRepeat.value : null;
     if (q) {
       title = q.title;
       if (q.due) { due = q.due; time = q.time; }
       if (q.time) kind = 'reminder';
       if (q.urg) urg = q.urg;
+      if (q.repeat) repeat = q.repeat;
     }
     if (kind !== 'reminder') time = null;
-    const fields = { kind: kind, title: title.slice(0, 80), subject: fSubject.value.trim(), desc: fDesc.value.trim(), cat: cat, urg: urg, due: due, time: time };
+    if (repeat && !due) due = todayISO();
+    // Étapes : une par ligne ; une étape déjà cochée le reste si son texte n'a pas changé.
+    const before = editingId && S.tasks.get(editingId) ? S.tasks.get(editingId).steps : [];
+    const doneBefore = new Set(before.filter(x => x.d).map(x => x.t));
+    const steps = fSteps.value.split('\n').map(x => x.trim()).filter(Boolean).slice(0, 30).map(x => ({ t: x.slice(0, 120), d: doneBefore.has(x.slice(0, 120)) }));
+    const fields = { kind: kind, title: title.slice(0, 80), subject: fSubject.value.trim(), desc: fDesc.value.trim(), cat: cat, urg: urg, due: due, time: time, repeat: repeat, steps: steps };
     const wasEditing = editingId;
     editingId = null;
     closeDlg(dlg).then(() => {
