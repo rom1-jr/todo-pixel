@@ -572,12 +572,13 @@
         '<div class="card-text"><h3 class="card-title">' + esc(t.title) + '</h3></div>' +
         '<button type="button" class="more" data-act="toggle" aria-expanded="' + open + '" aria-controls="d-' + esc(t.id) + '" aria-label="' + (open ? 'Masquer' : 'Afficher') + ' la description">' + svgIco('plus', 18, 2) + '</button>' +
       '</div>' +
+      (!isR && t.subject ? '<p class="card-subject">' + esc(t.subject) + '</p>' : '') +
       '<div class="desc-wrap" id="d-' + esc(t.id) + '"' + (open ? '' : ' inert') + '><div class="desc-clip"><div class="desc">' +
         (t.desc ? '<p class="desc-text">' + esc(t.desc) + '</p>' : '<p class="desc-text is-empty">Pas de description.</p>') +
         '<div class="desc-row"><p class="meta">' + (isR ? 'Créé ' : 'Créée ') + when(t.createdAt) + '</p>' +
         '<div class="desc-actions">' + actions + '</div></div>' +
       '</div></div></div>' +
-      '<div class="card-foot">' + urg + '<span class="foot-subject">' + (t.subject ? '<span class="subject">' + esc(t.subject) + '</span>' : '') + '</span>' + tail + '</div>' +
+      '<div class="card-foot">' + urg + (isR ? '<span class="foot-subject">' + (t.subject ? '<span class="subject">' + esc(t.subject) + '</span>' : '') + '</span>' : '<span class="foot-space"></span>') + tail + '</div>' +
     '</article>';
   }
   function emptyHTML(kind, hidden) {
