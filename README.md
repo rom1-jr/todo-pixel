@@ -93,7 +93,7 @@ Firebase → **Paramètres du projet** → **Comptes de service** → **Génére
 **Settings** → **Actions** → **General** → **Workflow permissions** → **Read and write permissions** → **Save**. Le workflow `keepalive.yml` évite la mise en pause de GitHub après 60 jours sans activité.
 
 ### 7.6 Activer sur l'iPhone
-Dans l'appli ouverte depuis l'icône : roue dentée → heure du récap → **Activer sur cet appareil** → **Autoriser** → **Tester une notif**.
+Dans l'appli ouverte depuis l'icône : **Réglages** (en haut à droite) → heure du récap → **Activer sur cet appareil** → **Autoriser** → **Tester une notif**.
 
 ### 7.7 Tester l'envoi
 **Actions** → **Récap du matin** → **Run workflow**. Le récap arrive en une minute environ, puis chaque matin tout seul.
@@ -114,8 +114,18 @@ Dans l'appli ouverte depuis l'icône : roue dentée → heure du récap → **Ac
 | Pas de récap le matin | **Actions** → **Récap du matin** → dernier lancement : le message dit quelle étape revoir (7.2 à 7.4). |
 | Pas d'installation possible dans Edge | Raccourci `--app` de la partie 6. |
 
+## Au quotidien
+
+- **Ajout rapide** : écris dans le champ en haut de la liste puis **Entrée**. Une date (« demain », « lundi », « 15/10 ») devient l'échéance, une heure (« 14h », « 9h30 ») crée un rappel, un « ! » seul met la priorité haute. Exemple : `Rappeler le fournisseur demain 14h`. **Détails** ouvre le formulaire complet.
+- **Organisation** : la liste est rangée en *En retard*, *Aujourd'hui*, *À venir* et *Sans échéance*, la priorité haute en premier.
+- **Terminer** : coche le rond à gauche (**Annuler** juste après si besoin). Le bouton **…** sert à commencer une tâche, changer sa priorité ou son échéance, reporter un rappel, modifier ou supprimer.
+- **Pro / Perso / Tout** : le filtre est retenu sur chaque appareil. Choisis **Pro** sur le PC du bureau pour ne voir que le travail.
+- **Alertes des rappels** : réglages → **Activer les alertes ici**. La notification s'affiche à l'heure tant que l'appli est ouverte (sur le PC, garde-la sur le côté de l'écran). Le récap du matin liste aussi les rappels du jour.
+- **Style** : réglages → **Apparence**. *Bureau* (sobre, par défaut) ou *Aventure* (pixel art). Le choix vaut pour l'appareil.
+- **Raccourcis sur PC** : **N** pour écrire une nouvelle tâche, **Échap** pour vider le champ ou fermer.
+
 ## Bon à savoir
 
 - **Tes données** sont dans Firestore et les règles réservent l'accès à ton compte. Le code de ce dépôt est public, tes tâches non.
 - **Hors ligne**, l'appli s'ouvre quand même et envoie tes changements au retour du réseau.
-- **Polices** : Press Start 2P, Pixelify Sans et Jacquard 24, sous licence SIL Open Font License (voir `fonts/`).
+- **Polices** : IBM Plex Sans, IBM Plex Mono, Press Start 2P, Pixelify Sans et Jacquard 24, sous licence SIL Open Font License (voir `fonts/`).

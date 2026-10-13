@@ -1,4 +1,4 @@
-/* To do list — appli pixel art (PWA).
+/* To do list (PWA) — deux styles au choix par appareil : Bureau (sobre, par défaut) et Aventure (pixel art).
    Synchro via Firebase quand config.js est rempli, via la base de la page quand elle tourne dans Claude,
    sinon mode local (tâches gardées dans le navigateur). */
 (() => {
@@ -36,6 +36,7 @@
     cursor: ["k...", "kk..", "kkk.", "kkkk", "kkk.", "kk..", "k..."],
     window: ["kkkkkkkkk", "kkkkkkkkk", "k.......k", "k...kkkkk", "k....kkkk", "k...kk.kk", "k..kk...k", "kkkkkkkkk"],
     mail: ["kkkkkkk", "kk...kk", "k.k.k.k", "k..k..k", "kkkkkkk"],
+    clock: [".kkkkk.", "k..k..k", "k..k..k", "k..kk.k", "k.....k", "k.....k", ".kkkkk."],
     gear: ["...kkk...", ".k.kkk.k.", "..kkkkk..", "kkkk.kkkk", "kkk...kkk", "kkkk.kkkk", "..kkkkk..", ".k.kkk.k.", "...kkk..."],
     quill: ["........k", "......kwk", ".....kwWk", "....kwWk.", "...kwWk..", "..kwWk...", ".kWk.....", ".kk......", "k........"],
     tome: [".kkkkkkkkk.", "kPPPPPPPPPk", "kPgPPPPPgPk", "kPPPPyPPPPk", "kPPPyyyPPPk", "kPPPPyPPPPk", "kPPPPPPPPPk", "kPgPPPPPgPk", "kPPPPPPPPPk", "kwwwwwwwwwk", ".kkkkkkkkk."],
@@ -163,6 +164,30 @@
   const anim2 = (frames, cls, scale, extra) => '<span class="anim2' + (extra ? ' ' + extra : '') + '">' + sprite(frames[0], cls, scale) + sprite(frames[1], cls, scale) + '</span>';
   const staIcon = (name, scale) => name === 'doing' ? anim2(STA.doing, 'sta', scale) : sprite(STA[name], 'sta', scale);
 
+  /* ================= icônes du style Bureau (traits fins) ================= */
+  const SVG = {
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    sliders: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+    popout: '<path d="M14 4h6v6M20 4l-8.5 8.5M18 14v4.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10"/>',
+    check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+    dots: '<circle cx="5.5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.5" fill="currentColor" stroke="none"/>',
+    back: '<path d="M14.5 6l-6 6 6 6"/>',
+    next: '<path d="M9.5 6l6 6-6 6"/>',
+    bell: '<path d="M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5l1.5 2h-14z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+    cal: '<rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/>',
+    trash: '<path d="M5 7h14M10 7V4.5h4V7M7 7l1 12.5h8L17 7"/>',
+    pencil: '<path d="M5 19l.8-3.6L15.6 5.6a1.5 1.5 0 0 1 2.1 0l.7.7a1.5 1.5 0 0 1 0 2.1L8.6 18.2z"/>',
+    undo: '<path d="M9 14.5L4.5 10 9 5.5"/><path d="M4.5 10H14a5 5 0 0 1 0 10h-3"/>',
+    play: '<path d="M8 6.5v11l9-5.5z"/>',
+    pause: '<path d="M9 6.5v11M15 6.5v11"/>',
+    clock: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4.5l3 2"/>',
+    none: '<path d="M6 6l12 12M18 6L6 18"/>'
+  };
+  const svgIco = (name, size) => '<svg class="si" viewBox="0 0 24 24" width="' + (size || 16) + '" height="' + (size || 16) + '" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + SVG[name] + '</svg>';
+  // Priorité : trois barres de hauteur croissante, pleines jusqu'au niveau (comme les chevrons du style Aventure).
+  const priBars = n => '<svg class="si bars" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" focusable="false">' +
+    [0, 1, 2].map(i => '<rect x="' + (i * 4.5) + '" y="' + (8 - i * 3.5) + '" width="3" height="' + (4 + i * 3.5) + '" rx=".6" fill="currentColor" opacity="' + (i < n ? 1 : .22) + '"/>').join('') + '</svg>';
+
   /* ================= rounded pixel frames (9-slice border images) ================= */
   const P2 = [2, 1, 0], P3 = [3, 1, 1, 0], P4 = [4, 2, 1, 1, 0, 0];
   const FRAMES = {
@@ -250,9 +275,11 @@
   }
   const FRAME_URI = {};
   Object.keys(FRAMES).forEach(k => { FRAME_URI[k] = gridURI(frameGrid(FRAMES[k])); });
+  // Les cadres pixel ne concernent que le style Aventure (classe .av sur <html>).
+  const AV = sel => sel.split(',').map(s => '.av ' + s.trim()).join(',');
   function frameCSS(sel, name, scale) {
     const f = FRAMES[name], w = f.s * scale;
-    return sel + '{border-style:solid;border-width:' + w + 'px;border-image:url("' + FRAME_URI[name] + '") ' + f.s + ' / ' + w + 'px stretch;background-clip:padding-box;}';
+    return AV(sel) + '{border-style:solid;border-width:' + w + 'px;border-image:url("' + FRAME_URI[name] + '") ' + f.s + ' / ' + w + 'px stretch;background-clip:padding-box;}';
   }
   // Bords irréguliers (page de grimoire déchirée, parchemin abîmé) : un cadre en 9 parties dont les côtés,
   // déchiquetés, se répètent le long de la carte (border-image en mode « round »).
@@ -298,7 +325,7 @@
   };
   function raggedCSS(sel, name, scale) {
     const o = RAGGED[name], w = o.s * scale;
-    return sel + '{border-style:solid;border-width:' + w + 'px;border-image:url("' + raggedURI(o) + '") ' + o.s + ' / ' + w + 'px round;background-clip:padding-box;}';
+    return AV(sel) + '{border-style:solid;border-width:' + w + 'px;border-image:url("' + raggedURI(o) + '") ' + o.s + ' / ' + w + 'px round;background-clip:padding-box;}';
   }
   // La fiole de la barre : silhouette en escalier (fond arrondi à gauche, col à droite) découpée en clip-path,
   // le verre (.tube) étant la même forme rétrécie d'un pixel. Un pixel du dessin = 2 px à l'écran.
@@ -312,7 +339,7 @@
   function flaskCSS() {
     const L = [5, 3, 2, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 5];
     const R = [5, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 5];
-    return '.flask .glass{clip-path:' + stepPolygon(L, R, 2) + ';}.flask .tube{clip-path:' + stepPolygon(shrink(L), shrink(R), 2) + ';}';
+    return AV('.flask .glass') + '{clip-path:' + stepPolygon(L, R, 2) + ';}' + AV('.flask .tube') + '{clip-path:' + stepPolygon(shrink(L), shrink(R), 2) + ';}';
   }
   const frameStyle = document.createElement('style');
   frameStyle.textContent = [
@@ -348,7 +375,12 @@
     frameCSS('.dlg, .auth-card', 'dialog', 3),
     frameCSS('.input, .url-box', 'input', 2),
     frameCSS('.choice', 'boxScroll', 2),
-    '.opt input:checked + .choice{border-image-source:url("' + FRAME_URI.btnGold + '");}',
+    AV('.opt input:checked + .choice') + '{border-image-source:url("' + FRAME_URI.btnGold + '");}',
+    frameCSS('.seg button, .qd', 'boxScroll', 2),
+    AV('.seg button[aria-checked="true"], .qd[aria-pressed="true"]') + '{border-image-source:url("' + FRAME_URI.btnGold + '");}',
+    frameCSS('.quick', 'input', 2),
+    frameCSS('.q-more', 'btnParch', 2),
+    frameCSS('.q-preview, .grp-h', 'pillScroll', 2),
     flaskCSS()
   ].join('\n');
   document.head.appendChild(frameStyle);
@@ -416,7 +448,9 @@
     return 'night';
   }
   let phase = currentPhase();
+  const isBz = () => !document.documentElement.classList.contains('av');
   function drawScene() {
+    if (isBz()) return; // le décor n'existe que dans le style Aventure
     const P = PHASES[phase];
     world.dataset.phase = phase;
     document.documentElement.style.backgroundColor = P.bg;
@@ -690,7 +724,7 @@
     done: { label: 'Validée', icon: 'done' }
   };
   const RSTATUS = { todo: { label: 'À retenir', icon: 'bell' }, done: { label: 'C\'est fait', icon: 'done' } };
-  const URG = { 1: 'Faible', 2: 'Moyenne', 3: 'Haute' };
+  const URG = { 1: 'Basse', 2: 'Moyenne', 3: 'Haute' };
   const CAT = { pro: { label: 'Pro', outfit: 'en mage' }, perso: { label: 'Perso', outfit: 'en troll-gobelin' } };
   const $ = (sel, el) => (el || document).querySelector(sel);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -706,13 +740,125 @@
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 
+  /* ================= dates (jour civil 'AAAA-MM-JJ', heure 'HH:MM') et lecture de l'ajout rapide ================= */
+  const isISO = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(Date.parse(s + 'T00:00:00Z'));
+  const isHM = s => typeof s === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(s);
+  const isoParts = s => s.split('-').map(Number);
+  const utcOf = iso => { const p = isoParts(iso); return Date.UTC(p[0], p[1] - 1, p[2]); };
+  const isoOfUTC = ms => new Date(ms).toISOString().slice(0, 10);
+  const addDays = (iso, n) => { const p = isoParts(iso); return isoOfUTC(Date.UTC(p[0], p[1] - 1, p[2] + n)); };
+  const weekdayOf = iso => new Date(utcOf(iso)).getUTCDay(); // 0 = dimanche
+  const daysBetween = (a, b) => Math.round((utcOf(b) - utcOf(a)) / 864e5);
+  const nextWeekday = (today, wd) => { let n = (wd - weekdayOf(today) + 7) % 7; if (n === 0) n = 7; return addDays(today, n); };
+  const WD = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+  const MO = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  // « Aujourd'hui », « Demain », « Hier », « Jeudi » (dans la semaine), sinon « Lun. 19 oct. » (+ année si besoin).
+  function dayLabel(iso, today) {
+    const n = daysBetween(today, iso);
+    if (n === 0) return 'Aujourd\'hui';
+    if (n === 1) return 'Demain';
+    if (n === -1) return 'Hier';
+    if (n > 1 && n < 7) return cap(WD[weekdayOf(iso)]);
+    const p = isoParts(iso);
+    return cap(WD[weekdayOf(iso)].slice(0, 3)) + '. ' + p[2] + ' ' + MO[p[1] - 1] + (p[0] !== Number(today.slice(0, 4)) ? ' ' + p[0] : '');
+  }
+  const MONTHS = { janvier: 1, janv: 1, fevrier: 2, fevr: 2, fev: 2, mars: 3, avril: 4, avr: 4, mai: 5, juin: 6, juillet: 7, juil: 7, aout: 8,
+    septembre: 9, sept: 9, sep: 9, octobre: 10, oct: 10, novembre: 11, nov: 11, decembre: 12, dec: 12 };
+  const fold = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[’`]/g, '\'');
+  // Date valide la plus proche à partir d'un jour et d'un mois (cette année, sinon l'an prochain).
+  function upcoming(today, m, d, y) {
+    const ty = Number(today.slice(0, 4));
+    const mk = yy => { const ms = Date.UTC(yy, m - 1, d); const iso = isoOfUTC(ms); return Number(iso.slice(5, 7)) === m ? iso : null; };
+    if (y) { const yy = y < 100 ? 2000 + y : y; return mk(yy); }
+    const a = mk(ty);
+    if (a && a >= today) return a;
+    return mk(ty + 1);
+  }
+  // Lit le texte tapé dans l'ajout rapide : « Appeler Martin demain 14h », « Rapport pour lundi ! », « Toner 15/10 ».
+  // Rend le titre nettoyé, la date, l'heure (une heure = un rappel) et la priorité haute si « ! » est écrit seul.
+  function parseQuick(text, today, hm) {
+    const words = String(text || '').trim().split(/\s+/).filter(Boolean);
+    const low = words.map(fold);
+    const used = new Array(words.length).fill(false);
+    let due = null, time = null, urg = null;
+    const DATE_PREFIX = ['pour', 'avant', 'd\'ici', 'des', 'le', 'ce', 'cette', 'a', 'au', 'du', 'jusqu\'a'];
+    const markPrefix = i => { if (i > 0 && !used[i - 1] && DATE_PREFIX.includes(low[i - 1])) used[i - 1] = true; };
+    const clean = w => w.replace(/[,;.!?]+$/, '');
+    // 1. priorité : « ! » (ou « !! ») tout seul
+    low.forEach((w, i) => { if (/^!{1,3}$/.test(w)) { urg = 3; used[i] = true; } });
+    // 2. dates
+    for (let i = 0; i < words.length && !due; i++) {
+      if (used[i]) continue;
+      const w = clean(low[i]), next = i + 1 < words.length ? clean(low[i + 1]) : '';
+      let n = 0, d = null;
+      if (w === 'aujourd\'hui' || w === 'auj') { d = today; n = 1; }
+      else if (w === 'ce' && (next === 'soir' || next === 'matin')) { d = today; n = 2; }
+      else if (w === 'apres-demain' || (w === 'apres' && next === 'demain')) { d = addDays(today, 2); n = w === 'apres' ? 2 : 1; }
+      else if (w === 'demain') { d = addDays(today, 1); n = 1; }
+      else if (WD.indexOf(w) >= 0) { d = nextWeekday(today, WD.indexOf(w)); n = next === 'prochain' ? 2 : 1; }
+      else if (w === 'semaine' && next === 'prochaine' && i > 0 && low[i - 1] === 'la') { d = nextWeekday(today, 1); n = 2; used[i - 1] = true; }
+      else if (/^\d{1,2}\/\d{1,2}(\/\d{2}|\/\d{4})?$/.test(w)) {
+        const p = w.split('/').map(Number);
+        d = upcoming(today, p[1], p[0], p[2]); n = d ? 1 : 0;
+      } else if (/^\d{1,2}(er)?$/.test(w) && MONTHS[next.replace(/\.$/, '')]) {
+        d = upcoming(today, MONTHS[next.replace(/\.$/, '')], parseInt(w, 10)); n = d ? 2 : 0;
+      } else if (w === 'le' && /^[1-9]\d?(er)?$/.test(next)) {
+        const day = parseInt(next, 10), after = i + 2 < words.length ? clean(low[i + 2]).replace(/\.$/, '') : '';
+        if (/^\d+$/.test(after)) { /* un numéro de téléphone, pas une date */ }
+        else if (MONTHS[after]) { d = upcoming(today, MONTHS[after], day); n = d ? 3 : 0; }
+        else {
+          const p = isoParts(today);
+          let cand = isoOfUTC(Date.UTC(p[0], p[1] - 1, day));
+          if (Number(cand.slice(8, 10)) !== day || cand < today) cand = isoOfUTC(Date.UTC(p[0], p[1], day));
+          d = Number(cand.slice(8, 10)) === day ? cand : null; n = d ? 2 : 0;
+        }
+      }
+      if (d && n) { due = d; markPrefix(i); for (let k = 0; k < n; k++) used[i + k] = true; }
+    }
+    // 3. heure : « 14h », « 14h30 », « 9:15 », acceptée après « à / vers / dès », à côté d'une date, ou en fin de texte
+    const TIME = /^([01]?\d|2[0-3])(?:h([0-5]\d)?|:([0-5]\d))$/;
+    for (let i = 0; i < words.length && !time; i++) {
+      if (used[i]) continue;
+      const m = TIME.exec(clean(low[i]));
+      if (!m) continue;
+      const prev = i > 0 ? low[i - 1] : '';
+      const restFree = words.slice(i + 1).every((w, k) => used[i + 1 + k] || /^[,;.!?]+$/.test(w));
+      const byDate = (i > 0 && used[i - 1] && !/^!+$/.test(low[i - 1])) || (i + 1 < words.length && used[i + 1] && !/^!+$/.test(low[i + 1]));
+      const prefixed = ['a', 'vers', 'des'].includes(prev);
+      if (!(prefixed || byDate || restFree)) continue;
+      time = String(m[1]).padStart(2, '0') + ':' + (m[2] || m[3] || '00');
+      used[i] = true;
+      if (prefixed) used[i - 1] = true;
+    }
+    if (time && !due) due = time > hm ? today : addDays(today, 1);
+    let title = words.filter((w, i) => !used[i]).join(' ').replace(/\s+([,;.!?])/g, '$1').replace(/^[\s,;:–-]+|[\s,;:–-]+$/g, '').trim();
+    if (!title) title = String(text || '').trim();
+    return { title: title, due: due, time: time, kind: time ? 'reminder' : 'task', urg: urg };
+  }
+  // Jour et heure de l'appareil (fuseau TZ) : « 2026-10-13 » et « 14:05 ».
+  const isoFmt = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' });
+  const hmFmt = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+  const todayISO = () => { const p = Object.fromEntries(isoFmt.formatToParts(new Date()).map(x => [x.type, x.value])); return p.year + '-' + p.month + '-' + p.day; };
+  const nowHM = () => hmFmt.format(new Date()).replace(/^24/, '00');
+  const minutesOf = hm => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
+  // Ajoute des minutes à un jour + heure, arrondi aux 5 minutes suivantes (pour « Reporter d'1 h »).
+  function plusMinutes(iso, hm, mins) {
+    let total = Math.ceil((minutesOf(hm) + mins) / 5) * 5;
+    const shift = Math.floor(total / 1440);
+    total -= shift * 1440;
+    return { due: addDays(iso, shift), time: String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0') };
+  }
+
   /* ================= state ================= */
+  // Réglages propres à cet appareil : style (bureau / aventure), filtre affiché (pro / perso / all), alertes, valeurs par défaut.
+  const prefs = Object.assign({ cat: 'pro', urg: 2, kind: 'task', hour: 7, style: 'bureau', filter: 'all', alerts: false }, lsGet('pixel-todo-prefs', {}));
+  const savePrefs = () => lsSet('pixel-todo-prefs', prefs);
   const S = {
     tasks: new Map(), view: 'tasks', expanded: new Set(), leaving: new Set(), fresh: new Set(),
-    loaded: false, mode: FIREBASE_READY ? 'firebase' : (IN_CLAUDE ? 'claude' : 'local'), user: null, authChecked: !FIREBASE_READY
+    loaded: false, mode: FIREBASE_READY ? 'firebase' : (IN_CLAUDE ? 'claude' : 'local'), user: null, authChecked: !FIREBASE_READY,
+    filter: ['pro', 'perso', 'all'].includes(prefs.filter) ? prefs.filter : 'all'
   };
-  const prefs = Object.assign({ cat: 'pro', urg: 2, kind: 'task', hour: 7 }, lsGet('pixel-todo-prefs', {}));
-  const savePrefs = () => lsSet('pixel-todo-prefs', prefs);
 
   function normalize(id, d) {
     d = d || {};
@@ -721,6 +867,9 @@
     const archived = d.archived === true || status === 'done';
     if (archived) status = 'done';
     if (kind === 'reminder' && status === 'doing') status = 'todo';
+    // Échéance (jour 'AAAA-MM-JJ') pour tous ; heure ('HH:MM') seulement pour un rappel daté.
+    const due = isISO(d.due) ? d.due : null;
+    const time = kind === 'reminder' && due && isHM(d.time) ? d.time : null;
     return {
       id: id, kind: kind,
       title: typeof d.title === 'string' && d.title.trim() ? d.title : 'Sans titre',
@@ -728,12 +877,13 @@
       desc: typeof d.desc === 'string' ? d.desc : '',
       cat: d.cat === 'perso' ? 'perso' : 'pro',
       urg: [1, 2, 3].includes(Number(d.urg)) ? Number(d.urg) : 2,
+      due: due, time: time,
       status: status, archived: archived,
       createdAt: Number(d.createdAt) || 0, updatedAt: Number(d.updatedAt) || 0, archivedAt: Number(d.archivedAt) || 0
     };
   }
   const toDoc = t => ({
-    kind: t.kind, title: t.title, subject: t.subject, desc: t.desc, cat: t.cat, urg: t.urg,
+    kind: t.kind, title: t.title, subject: t.subject, desc: t.desc, cat: t.cat, urg: t.urg, due: t.due || null, time: t.time || null,
     status: t.status, archived: t.archived, createdAt: t.createdAt, updatedAt: t.updatedAt, archivedAt: t.archivedAt || null
   });
 
@@ -858,6 +1008,9 @@
 
   /* ================= actions ================= */
   function commit(t) { t.updatedAt = Date.now(); S.tasks.set(t.id, t); }
+  const lowFirst = s => s.charAt(0).toLowerCase() + s.slice(1);
+  // « demain à 14:00 », « lundi », « lun. 19 oct. »
+  const whenWords = t => t.due ? lowFirst(dayLabel(t.due, todayISO())) + (t.time ? ' à ' + t.time : '') : '';
   function addTask(fields) {
     const now = Date.now();
     const t = normalize(newId(), Object.assign({}, fields, { status: 'todo', archived: false, createdAt: now, updatedAt: now }));
@@ -865,7 +1018,7 @@
     S.fresh.add(t.id);
     render();
     Store.put(t);
-    toast(t.kind === 'reminder' ? 'Nouveau rappel ajouté.' : 'Nouvelle tâche ajoutée.');
+    toast((t.kind === 'reminder' ? 'Rappel ajouté' : 'Tâche ajoutée') + (t.due ? ' pour ' + whenWords(t) : '') + '.');
   }
   function editTask(id, fields) {
     const t = S.tasks.get(id);
@@ -874,8 +1027,26 @@
     commit(next);
     S.fresh.add(id);
     render();
-    Store.patch(id, { kind: next.kind, title: next.title, subject: next.subject, desc: next.desc, cat: next.cat, urg: next.urg, status: next.status, updatedAt: next.updatedAt });
+    Store.patch(id, { kind: next.kind, title: next.title, subject: next.subject, desc: next.desc, cat: next.cat, urg: next.urg, due: next.due, time: next.time, status: next.status, updatedAt: next.updatedAt });
     toast(next.kind === 'reminder' ? 'Rappel modifié.' : 'Tâche modifiée.');
+  }
+  // Nouvelle échéance (ou nouvelle date et heure d'un rappel), depuis le menu « … ».
+  function setWhen(id, due, time) {
+    const t = S.tasks.get(id);
+    if (!t) return;
+    const next = normalize(id, Object.assign({}, t, { due: due, time: time }));
+    commit(next);
+    S.fresh.add(id);
+    render();
+    Store.patch(id, { due: next.due, time: next.time, updatedAt: next.updatedAt });
+    toast(next.kind === 'reminder'
+      ? (next.due ? 'Rappel reporté à ' + whenWords(next) + '.' : 'Rappel sans date.')
+      : (next.due ? 'Échéance : ' + whenWords(next) + '.' : 'Échéance retirée.'));
+  }
+  function snooze(id, mode) {
+    const today = todayISO();
+    const w = mode === 'tomorrow' ? { due: addDays(today, 1), time: '09:00' } : plusMinutes(today, nowHM(), 60);
+    setWhen(id, w.due, w.time);
   }
   function setStatus(id, status) {
     const t = S.tasks.get(id);
@@ -909,24 +1080,27 @@
       render();
       focusAfterRemoval();
       Store.patch(id, { status: 'done', archived: true, archivedAt: next.archivedAt, updatedAt: next.updatedAt });
-      toast('« ' + next.title + ' » part aux archives.', 'Annuler', () => restore(id, before, true), next.kind === 'reminder' ? 'RAPPEL CLASSÉ !' : 'QUÊTE ACCOMPLIE !');
+      const undo = () => restore(id, before, true);
+      if (isBz()) toast(next.kind === 'reminder' ? 'Rappel « ' + next.title + ' » terminé.' : 'Tâche « ' + next.title + ' » terminée.', 'Annuler', undo);
+      else toast('« ' + next.title + ' » part aux archives.', 'Annuler', undo, next.kind === 'reminder' ? 'RAPPEL CLASSÉ !' : 'QUÊTE ACCOMPLIE !');
     };
     if (!card || reduced()) { finish(); return; }
-    burst(card.querySelector('.status-box') || card);
+    if (!isBz()) burst(card.querySelector('.status-box') || card);
     S.leaving.add(id);
     card.classList.add('is-leaving');
-    setTimeout(finish, 520);
+    setTimeout(finish, isBz() ? 210 : 520);
   }
   function restore(id, status, isUndo) {
     const t = S.tasks.get(id);
     if (!t) return;
-    const back = status || (t.kind === 'reminder' ? 'todo' : 'doing');
+    // Bureau : on décoche, la tâche revient « à faire ». Aventure : « Remettre en cours ».
+    const back = status || (t.kind === 'reminder' || isBz() ? 'todo' : 'doing');
     const next = Object.assign({}, t, { status: back, archived: false, archivedAt: null });
     commit(next);
     S.fresh.add(id);
     render();
     Store.patch(id, { status: back, archived: false, archivedAt: null, updatedAt: next.updatedAt });
-    toast(isUndo ? '« ' + next.title + ' » est de retour dans la liste.' : '« ' + next.title + ' » est de retour dans ta liste' + (next.kind === 'task' ? ', en cours.' : '.'));
+    toast(isUndo || back !== 'doing' ? '« ' + next.title + ' » est de retour dans la liste.' : '« ' + next.title + ' » est de retour dans ta liste, en cours.');
   }
   function removeTask(id) {
     const t = S.tasks.get(id);
@@ -945,15 +1119,18 @@
     authView: $('#view-auth'), tasksView: $('#view-tasks'), archiveView: $('#view-archive'),
     list: $('#task-list'), archive: $('#archive-list'), addRow: $('#add-row'),
     modeNote: $('#mode-note'), modeNoteText: $('#mode-note-text'), rampart: $('#rampart'),
-    toArchive: $('#to-archive'), toTasks: $('#to-tasks'), archiveCount: $('#archive-count')
+    toArchive: $('#to-archive'), toTasks: $('#to-tasks'), archiveCount: $('#archive-count'),
+    bzTitle: $('#bz-title'), bzSub: $('#bz-sub'), controls: $('#controls'), filter: $('#filter'),
+    bzArchive: $('#bz-archive'), bzArchiveCount: $('#bz-archive-count'), bzBack: $('#bz-back'),
+    quick: $('#quick-form'), qInput: $('#q-input'), qPreview: $('#q-preview')
   };
   $('#chest-ico').innerHTML = ico('chest', 2);
   $('#back-ico').innerHTML = ico('back', 2);
   $('#add-plus').innerHTML = ico('plus', 3);
   $('#settings-btn').innerHTML = ico('gear', 3);
   $('#popout').innerHTML = ico('window', 3);
-  // Dans Claude : pas de réglages (le récap et le démarrage auto sont pour l'appli installée), mais une fenêtre à part.
-  if (IN_CLAUDE) { $('#popout').hidden = false; $('#settings-btn').hidden = true; }
+  // Dans Claude : une fenêtre à part en plus (les réglages n'y montrent que ce qui marche dans la page).
+  if (IN_CLAUDE) { $('#popout').hidden = false; $('#bz-popout').hidden = false; }
   $('#star-l').innerHTML = ico('star', 3);
   $('#star-r').innerHTML = ico('star', 3);
   $('#stage-pro').innerHTML = charFull('pro', 3);
@@ -961,10 +1138,36 @@
   $('#kind-ico-task').innerHTML = ico('tome', 3);
   $('#kind-ico-reminder').innerHTML = ico('scroll', 3);
   document.querySelectorAll('.urg-ico').forEach(el => { el.innerHTML = chevrons(Number(el.dataset.n), 2); });
+  // Style Bureau : icônes à traits fins.
+  $('#bz-mark').innerHTML = svgIco('check', 14);
+  $('#bz-settings').innerHTML = svgIco('sliders', 20);
+  $('#bz-popout').innerHTML = svgIco('popout', 19);
+  $('#bz-next-ico').innerHTML = svgIco('next', 14);
+  $('#bz-back-ico').innerHTML = svgIco('back', 14);
+  document.querySelectorAll('.pri-ico').forEach(el => { el.innerHTML = priBars(Number(el.dataset.n)); });
+  const setStyleIcons = () => { $('#q-ico').innerHTML = isBz() ? svgIco('plus', 18) : ico('plus', 2); };
+  setStyleIcons();
 
-  const cardEl = id => document.querySelector('.card[data-id="' + id + '"]');
+  const cardEl = id => document.querySelector('.card[data-id="' + id + '"], .row[data-id="' + id + '"]');
   const byUrgency = (a, b) => (b.urg - a.urg) || (a.createdAt - b.createdAt);
   const byArchived = (a, b) => (b.archivedAt - a.archivedAt);
+  const inFilter = t => S.filter === 'all' || t.cat === S.filter;
+  // En retard : échéance passée, ou rappel d'aujourd'hui dont l'heure est passée.
+  const isLate = (t, today, hm) => !!t.due && (t.due < today || (t.kind === 'reminder' && t.due === today && !!t.time && t.time <= hm));
+  // Groupes de la liste, dans l'ordre : en retard, aujourd'hui, à venir, sans échéance.
+  // Dans chaque groupe : le jour d'abord (« en retard », « à venir »), puis la priorité, puis l'heure, puis l'ancienneté.
+  const GROUPS = [['late', 'En retard'], ['today', 'Aujourd\'hui'], ['soon', 'À venir'], ['none', 'Sans échéance']];
+  const byWhen = (a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : 0) || ((a.time || '99') < (b.time || '99') ? -1 : (a.time || '99') > (b.time || '99') ? 1 : 0);
+  function groupTasks(list, today) {
+    const g = { late: [], today: [], soon: [], none: [] };
+    list.forEach(t => { g[!t.due ? 'none' : t.due < today ? 'late' : t.due === today ? 'today' : 'soon'].push(t); });
+    const byDay = (a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : 0);
+    g.late.sort((a, b) => byDay(a, b) || (b.urg - a.urg) || byWhen(a, b) || (a.createdAt - b.createdAt));
+    g.today.sort((a, b) => (b.urg - a.urg) || byWhen(a, b) || (a.createdAt - b.createdAt));
+    g.soon.sort((a, b) => byDay(a, b) || (b.urg - a.urg) || byWhen(a, b) || (a.createdAt - b.createdAt));
+    g.none.sort(byUrgency);
+    return GROUPS.filter(([k]) => g[k].length).map(([k, label]) => ({ key: k, label: label, items: g[k] }));
+  }
   // Rappel : page de grimoire déchirée. Tâche : pierre volcanique (haute), dalle de pierre (moyenne), parchemin abîmé (faible).
   const lookOf = t => t.kind === 'reminder' ? 't-page' : (t.urg === 3 ? 't-lava' : (t.urg === 2 ? 't-stone' : 't-vellum'));
   // La longue fiole : vide (pas commencée), liquide qui monte et descend doucement avec son écume (en cours), pleine (validée).
@@ -1012,7 +1215,10 @@
     const middle = isR
       ? '<span class="scroll-label">' + ico('quill', 2) + '</span>'
       : flaskHTML(st, look);
-    const subject = t.subject ? '<p class="subject">' + ico('mail', 2) + '<span>' + esc(t.subject) + '</span></p>' : '';
+    const today = todayISO();
+    const subject = (t.subject ? '<p class="subject">' + ico('mail', 2) + '<span>' + esc(t.subject) + '</span></p>' : '') +
+      (t.due && !archived ? '<p class="subject due-line' + (isLate(t, today, nowHM()) ? ' late' : '') + '">' + ico('clock', 2) + '<span>' +
+        dayLabel(t.due, today) + (t.time ? ' à ' + t.time : '') + '</span></p>' : '');
     const actions = archived ? '' :
       '<div class="desc-actions">' +
         '<button type="button" class="btn btn-act" data-act="edit">' + ico('pencil', 2) + '<span>Modifier</span></button>' +
@@ -1038,56 +1244,136 @@
         : '') +
     '</article>';
   }
-  function emptyHTML(kind) {
+  /* ---------- Bureau : une ligne par tâche, dans une liste à filets ---------- */
+  function rowHTML(t, archived, today, hm) {
+    const open = S.expanded.has(t.id);
+    const isR = t.kind === 'reminder';
+    const st = archived ? 'done' : t.status;
+    const late = !archived && isLate(t, today, hm);
+    const what = (isR ? 'le rappel' : 'la tâche') + ' « ' + t.title + ' »';
+    const cls = 'row' + (open ? ' is-open' : '') + (archived ? ' is-done' : '') + (S.leaving.has(t.id) ? ' is-leaving' : '') + (S.fresh.has(t.id) && !reduced() ? ' is-new' : '');
+    const chk = '<button type="button" class="chk" data-act="' + (archived ? 'restore' : 'done') + '" aria-label="' +
+      esc(archived ? 'Remettre ' + what + ' dans la liste' : 'Terminer ' + what) + '">' + svgIco('check', 13) + '</button>';
+    const meta = ['<span class="pri" data-urg="' + t.urg + '">' + priBars(t.urg) + '<span>' + URG[t.urg] + '</span></span>'];
+    if (archived) meta.push('<span class="when">' + (isR ? 'Terminé ' : 'Terminée ') + when(t.archivedAt) + '</span>');
+    else if (t.due) meta.push('<span class="due' + (late ? ' late' : '') + '">' + svgIco(isR ? 'bell' : 'cal', 13) + '<span>' + esc(dayLabel(t.due, today)) + '</span>' + (t.time ? '<span class="tm">' + t.time + '</span>' : '') + '</span>');
+    else if (isR) meta.push('<span class="due">' + svgIco('bell', 13) + '<span>Rappel</span></span>');
+    if (!archived && st === 'doing') meta.push('<span class="chip doing">En cours</span>');
+    if (S.filter === 'all' && t.cat === 'perso') meta.push('<span class="chip cat">Perso</span>');
+    const details = '<div class="row-details" id="d-' + esc(t.id) + '"' + (open ? '' : ' hidden') + '>' +
+      (t.desc ? '<p class="desc-text">' + esc(t.desc) + '</p>' : '<p class="desc-text is-empty">Pas de description.</p>') +
+      '<p class="meta">' + (isR ? 'Créé ' : 'Créée ') + when(t.createdAt) + '</p>' +
+      '<div class="desc-actions">' + (archived
+        ? '<button type="button" class="btn btn-act" data-act="restore">' + svgIco('undo', 15) + '<span>Remettre dans la liste</span></button>'
+        : '<button type="button" class="btn btn-act" data-act="edit">' + svgIco('pencil', 15) + '<span>Modifier</span></button>') +
+        '<button type="button" class="btn btn-act btn-danger" data-act="delete">' + svgIco('trash', 15) + '<span>Supprimer</span></button></div>' +
+      '</div>';
+    return '<li class="' + cls + '" data-id="' + esc(t.id) + '" data-kind="' + t.kind + '" data-status="' + st + '" data-urg="' + t.urg + '" data-cat="' + t.cat + '">' + chk +
+      '<button type="button" class="row-open" data-act="toggle" aria-expanded="' + open + '" aria-controls="d-' + esc(t.id) + '">' +
+        '<span class="row-title">' + esc(t.title) + '</span>' +
+        (t.subject ? '<span class="row-sub">' + esc(t.subject) + '</span>' : '') +
+        '<span class="row-meta">' + meta.join('') + '</span>' +
+      '</button>' +
+      '<button type="button" class="more-btn" data-act="more" aria-haspopup="menu" aria-expanded="false" aria-label="' + esc('Actions pour ' + what) + '">' + svgIco('dots', 18) + '</button>' +
+      details + '</li>';
+  }
+  // La liste du jour, groupée par échéance (pas d'en-tête quand tout est « sans échéance »).
+  function groupsHTML(list, today, hm) {
+    const groups = groupTasks(list, today);
+    const solo = groups.length === 1 && groups[0].key === 'none';
+    const head = g => solo ? '' : '<h2 class="grp-h" id="g-' + g.key + '">' + g.label + '<span class="n">' + g.items.length + '</span></h2>';
+    return groups.map(g => '<section class="grp" data-g="' + g.key + '"' + (solo ? ' aria-label="Tâches"' : ' aria-labelledby="g-' + g.key + '"') + '>' + head(g) +
+      (isBz() ? '<ul class="rows">' + g.items.map(t => rowHTML(t, false, today, hm)).join('') + '</ul>' : g.items.map(t => cardHTML(t, false)).join('')) +
+      '</section>').join('');
+  }
+  function emptyHTML(kind, hidden) {
+    if (isBz()) {
+      if (kind === 'archive') return '<div class="empty"><p class="empty-title">Aucune tâche terminée</p><p>Ce que tu termines arrive ici, avec la date. Tu peux le remettre dans la liste à tout moment.</p></div>';
+      if (hidden) return '<div class="empty"><p class="empty-title">Rien en ' + CAT[S.filter].label + ' pour l\'instant</p><p>' + plural(hidden, 'élément') + ' ' + (S.filter === 'pro' ? 'perso' : 'pro') + (hidden > 1 ? ' sont masqués' : ' est masqué') + ' par le filtre.</p></div>';
+      return '<div class="empty"><p class="empty-title">Rien à faire pour l\'instant</p><p>Écris une tâche dans le champ ci-dessus. Une date devient l\'échéance, une heure crée un rappel.</p>' +
+        '<div class="ex"><span>Rappeler le fournisseur demain 14h</span><span>Rapport mensuel pour lundi !</span><span>Changer le toner du 2e étage</span></div></div>';
+    }
     if (kind === 'archive') {
       return '<div class="empty"><span class="stage" style="background-color:#c5d7ea">' + charFull('pro', 3) + '</span>' +
         '<div class="empty-text"><p class="empty-title">Coffre vide</p><p>Les tâches validées et les rappels classés arriveront ici.</p></div></div>';
     }
     return '<div class="empty"><span class="stage">' + charFull('perso', 3) + '</span>' +
-      '<div class="empty-text"><p class="empty-title">Le grimoire est vide</p><p>Ajoute une tâche ou un rappel avec le bouton juste en dessous.</p></div></div>';
+      '<div class="empty-text"><p class="empty-title">Le grimoire est vide</p><p>' + (hidden ? 'Le filtre masque ' + plural(hidden, 'entrée') + '. ' : '') + 'Ajoute une tâche ou un rappel avec le champ du haut ou le bouton juste en dessous.</p></div></div>';
   }
-  const bootHTML = () => '<div class="boot"><p class="boot-title">OUVERTURE DU GRIMOIRE</p>' + flaskHTML('doing') + '</div>';
+  const bootHTML = () => isBz()
+    ? '<div class="boot" role="status"><span>Chargement de ta liste…</span><span class="boot-bar"></span></div>'
+    : '<div class="boot"><p class="boot-title">OUVERTURE DU GRIMOIRE</p>' + flaskHTML('doing') + '</div>';
 
+  function syncFilter() {
+    els.filter.querySelectorAll('[data-f]').forEach(b => {
+      const on = b.dataset.f === S.filter;
+      b.setAttribute('aria-checked', String(on));
+      b.tabIndex = on ? 0 : -1;
+    });
+  }
+  function setSub(text, html) {
+    els.subline.textContent = text;
+    if (html != null) els.bzSub.innerHTML = html; else els.bzSub.textContent = text;
+  }
+  let lastSig = '';
   function render() {
     const focus = captureFocus();
+    const bz = isBz();
     const signedOut = S.mode === 'firebase' && S.authChecked && !S.user;
     const isArchive = S.view === 'archive' && !signedOut;
+    const ready = S.loaded && S.authChecked;
     els.authView.hidden = !signedOut;
     els.tasksView.hidden = signedOut || isArchive;
     els.archiveView.hidden = !isArchive;
     els.rampart.hidden = signedOut || !S.authChecked;
     els.toArchive.hidden = isArchive;
     els.toTasks.hidden = !isArchive;
+    els.controls.hidden = signedOut || !ready;
+    els.quick.hidden = signedOut || !ready || isArchive;
+    els.bzArchive.hidden = isArchive;
+    els.bzBack.hidden = !isArchive;
     els.title.innerHTML = isArchive ? ico('chest', 3) + '<span>Archives</span>' : '<span>To do list</span>';
+    els.bzTitle.textContent = isArchive ? 'Terminées' : 'To do list';
+    syncFilter();
+    updatePreview();
     if (signedOut) {
-      els.subline.textContent = 'Connecte-toi pour ouvrir ton grimoire';
+      setSub(bz ? 'Connecte-toi pour retrouver ta liste' : 'Connecte-toi pour ouvrir ton grimoire');
       return;
     }
-    const all = Array.from(S.tasks.values());
-    const current = all.filter(t => !t.archived).sort(byUrgency);
+    const today = todayISO(), hm = nowHM();
+    const everything = Array.from(S.tasks.values());
+    const all = everything.filter(inFilter);
+    const current = all.filter(t => !t.archived);
     const archived = all.filter(t => t.archived).sort(byArchived);
     els.archiveCount.textContent = String(archived.length);
+    els.bzArchiveCount.textContent = String(archived.length);
     els.archiveCount.hidden = !S.loaded;
-    if (!S.loaded || !S.authChecked) {
-      els.subline.textContent = 'Ouverture du grimoire…';
+    if (!ready) {
+      setSub(bz ? 'Chargement…' : 'Ouverture du grimoire…');
       els.list.innerHTML = bootHTML();
       els.addRow.hidden = true;
       els.modeNote.hidden = true;
       return;
     }
     if (isArchive) {
-      els.subline.textContent = archived.length ? plural(archived.length, 'entrée') + ' classée' + (archived.length > 1 ? 's' : '') : 'Rien dans le coffre pour l\'instant';
-      els.archive.innerHTML = archived.length ? archived.map(t => cardHTML(t, true)).join('') : emptyHTML('archive');
+      setSub(archived.length ? (bz ? plural(archived.length, 'terminée') : plural(archived.length, 'entrée') + ' classée' + (archived.length > 1 ? 's' : '')) : (bz ? 'Rien de terminé pour l\'instant' : 'Rien dans le coffre pour l\'instant'));
+      els.archive.innerHTML = archived.length
+        ? (bz ? '<ul class="rows">' + archived.map(t => rowHTML(t, true, today, hm)).join('') + '</ul>' : archived.map(t => cardHTML(t, true)).join(''))
+        : emptyHTML('archive');
     } else {
       const tasks = current.filter(t => t.kind === 'task').length;
       const rem = current.length - tasks;
+      const late = current.filter(t => isLate(t, today, hm)).length;
       const urgent = current.filter(t => t.urg === 3).length;
-      const today = dayFmt.format(new Date());
-      const parts = [today.charAt(0).toUpperCase() + today.slice(1), plural(tasks, 'tâche')];
+      const day = cap(dayFmt.format(new Date()));
+      const parts = [day, tasks ? plural(tasks, 'tâche') : (rem ? 'aucune tâche' : 'rien de prévu')];
       if (rem) parts.push(plural(rem, 'rappel'));
-      if (urgent) parts.push(plural(urgent, 'urgente'));
-      els.subline.textContent = parts.join(' · ');
-      els.list.innerHTML = current.length ? current.map(t => cardHTML(t, false)).join('') : emptyHTML('tasks');
+      if (!bz && urgent) parts.push(plural(urgent, 'urgente'));
+      if (late) parts.push(late + ' en retard');
+      // Bureau : chaque morceau reste entier quand la ligne passe à la ligne ; le retard en brique.
+      setSub(parts.join(' · '), parts.map((x, i) => '<span class="part' + (late && i === parts.length - 1 ? ' late' : '') + '">' + esc(x) + '</span>').join(' · '));
+      const hidden = everything.filter(t => !t.archived && !inFilter(t)).length;
+      els.list.innerHTML = current.length ? groupsHTML(current, today, hm) : emptyHTML('tasks', hidden);
       els.addRow.hidden = false;
       if (S.mode === 'local') {
         els.modeNote.hidden = false;
@@ -1100,14 +1386,17 @@
         els.modeNote.hidden = true;
       }
     }
+    lastSig = signature();
     S.fresh.clear();
     restoreFocus(focus);
     syncMenuAnchor();
+    updateBadge();
+    checkAlerts();
   }
   function captureFocus() {
     const a = document.activeElement;
     if (!a || !a.dataset || !a.dataset.act) return null;
-    const card = a.closest('.card');
+    const card = a.closest('.card, .row');
     return card ? { id: card.dataset.id, act: a.dataset.act } : null;
   }
   function restoreFocus(f) {
@@ -1118,34 +1407,71 @@
   }
   function focusAfterRemoval() {
     if (document.activeElement && document.activeElement !== document.body && document.contains(document.activeElement)) return;
-    const first = (S.view === 'archive' ? els.archive : els.list).querySelector('[data-act="status"], [data-act="restore"]');
-    (first || (S.view === 'archive' ? els.toTasks : $('#add-btn'))).focus({ preventScroll: true });
+    const first = (S.view === 'archive' ? els.archive : els.list).querySelector('[data-act="status"], [data-act="done"], [data-act="restore"]');
+    const fallback = S.view === 'archive' ? (isBz() ? els.bzBack : els.toTasks) : (isBz() ? els.qInput : $('#add-btn'));
+    (first || fallback).focus({ preventScroll: true });
   }
 
   /* ================= menus ================= */
   const menu = $('#menu');
   let menuState = null;
+  // Menu « … » du style Bureau : statut, priorité, échéance (ou report d'un rappel), modifier, supprimer.
+  const dayShort = iso => { const p = isoParts(iso); return p[2] + ' ' + MO[p[1] - 1]; };
+  function moreItems(t) {
+    const today = todayISO();
+    const it = (value, label, icon, extra) => Object.assign({ type: 'item', value: value, label: label, icon: icon }, extra || {});
+    if (t.archived) return [it('restore', 'Remettre dans la liste', svgIco('undo', 16)), { type: 'sep' }, it('delete', 'Supprimer définitivement…', svgIco('trash', 16), { cls: 'danger' })];
+    const items = [];
+    if (t.kind === 'task') items.push(t.status === 'doing' ? it('st:todo', 'Mettre en pause', svgIco('pause', 16)) : it('st:doing', 'Commencer', svgIco('play', 16)));
+    items.push(it('done', t.kind === 'reminder' ? 'Marquer comme fait' : 'Terminer', svgIco('check', 16)));
+    items.push({ type: 'sep' }, { type: 'label', label: 'Priorité' });
+    [3, 2, 1].forEach(v => items.push(it('urg:' + v, URG[v], '<span class="pri-ico" data-urg="' + v + '">' + priBars(v) + '</span>', { role: 'menuitemradio', checked: t.urg === v })));
+    items.push({ type: 'sep' });
+    if (t.kind === 'reminder') {
+      const h = plusMinutes(today, nowHM(), 60);
+      items.push({ type: 'label', label: 'Reporter' },
+        it('snooze:1h', 'Dans 1 heure', svgIco('clock', 16), { hint: (h.due === today ? '' : 'demain ') + h.time }),
+        it('snooze:tomorrow', 'Demain matin', svgIco('cal', 16), { hint: '09:00' }));
+    } else {
+      items.push({ type: 'label', label: 'Échéance' });
+      const opts = [['today', 'Aujourd\'hui', today], ['tomorrow', 'Demain', addDays(today, 1)], ['monday', 'Lundi prochain', nextWeekday(today, 1)], ['none', 'Sans échéance', null]];
+      opts.forEach(o => items.push(it('due:' + o[0], o[1], svgIco(o[0] === 'none' ? 'none' : 'cal', 16), { role: 'menuitemradio', checked: (t.due || null) === o[2], hint: o[0] === 'monday' ? dayShort(o[2]) : '' })));
+    }
+    items.push({ type: 'sep' }, it('edit', 'Modifier…', svgIco('pencil', 16)), it('delete', 'Supprimer…', svgIco('trash', 16), { cls: 'danger' }));
+    return items;
+  }
   function openMenu(anchor, kind, id) {
     closeMenu();
     const t = S.tasks.get(id);
     if (!t) return;
-    let items;
-    if (kind === 'status') {
-      const map = t.kind === 'reminder' ? RSTATUS : STATUS;
-      items = Object.keys(map).map(v => ({ value: v, icon: staIcon(map[v].icon, 2), label: map[v].label, hint: '', checked: t.status === v }));
+    if (kind === 'more') {
+      menu.className = 'menu';
+      menu.innerHTML = moreItems(t).map(it => it.type === 'sep' ? '<div class="menu-sep" role="separator"></div>'
+        : it.type === 'label' ? '<p class="menu-label" role="presentation">' + it.label + '</p>'
+        : '<button type="button" class="menu-item' + (it.cls ? ' ' + it.cls : '') + '" role="' + (it.role || 'menuitem') + '"' +
+          (it.role === 'menuitemradio' ? ' aria-checked="' + !!it.checked + '"' : '') + ' data-value="' + it.value + '">' +
+          '<span class="mi-ico">' + it.icon + '</span><span>' + it.label + '</span>' +
+          (it.hint ? '<span class="hint">' + it.hint + '</span>' : '') + (it.checked ? '<span class="mi-ok">' + svgIco('check', 15) + '</span>' : '') + '</button>').join('');
+      menu.setAttribute('aria-label', 'Actions pour « ' + t.title + ' »');
     } else {
-      items = [3, 2, 1].map(v => ({
-        value: String(v), icon: '<span class="chev" style="--urg-c:var(--u' + v + ')">' + chevrons(v, 2) + '</span>',
-        label: URG[v], hint: '', checked: t.urg === v
-      }));
+      let items;
+      if (kind === 'status') {
+        const map = t.kind === 'reminder' ? RSTATUS : STATUS;
+        items = Object.keys(map).map(v => ({ value: v, icon: staIcon(map[v].icon, 2), label: map[v].label, hint: '', checked: t.status === v }));
+      } else {
+        items = [3, 2, 1].map(v => ({
+          value: String(v), icon: '<span class="chev" style="--urg-c:var(--u' + v + ')">' + chevrons(v, 2) + '</span>',
+          label: URG[v], hint: '', checked: t.urg === v
+        }));
+      }
+      // Petit menu compact qui apparaît en douceur, juste à côté de la case touchée.
+      menu.className = 'menu';
+      menu.innerHTML = items.map(it =>
+        '<button type="button" class="menu-item" role="menuitemradio" aria-checked="' + it.checked + '" data-value="' + it.value + '">' +
+          '<span class="cur">' + ico('cursor', 2) + '</span>' + it.icon + '<span>' + it.label + '</span>' +
+          (it.hint ? '<span class="hint">' + it.hint + '</span>' : '') + '</button>').join('');
+      menu.setAttribute('aria-label', kind === 'status' ? 'Statut' : 'Urgence');
     }
-    // Petit menu compact qui apparaît en douceur, juste à côté de la case touchée.
-    menu.className = 'menu';
-    menu.innerHTML = items.map(it =>
-      '<button type="button" class="menu-item" role="menuitemradio" aria-checked="' + it.checked + '" data-value="' + it.value + '">' +
-        '<span class="cur">' + ico('cursor', 2) + '</span>' + it.icon + '<span>' + it.label + '</span>' +
-        (it.hint ? '<span class="hint">' + it.hint + '</span>' : '') + '</button>').join('');
-    menu.setAttribute('aria-label', kind === 'status' ? 'Statut' : 'Urgence');
     menu.hidden = false;
     menuState = { kind: kind, id: id };
     anchor.setAttribute('aria-expanded', 'true');
@@ -1156,7 +1482,7 @@
       void menu.offsetWidth;
       menu.classList.add('is-opening');
     }
-    (menu.querySelector('[aria-checked="true"]') || menu.querySelector('.menu-item')).focus({ preventScroll: true });
+    ((kind !== 'more' && menu.querySelector('[aria-checked="true"]')) || menu.querySelector('.menu-item')).focus({ preventScroll: true });
   }
   menu.addEventListener('animationend', e => { if (e.target === menu) menu.classList.remove('is-opening'); });
   function placeMenu(anchor) {
@@ -1165,7 +1491,9 @@
     const vw = document.documentElement.clientWidth;
     const vh = window.innerHeight;
     const gap = 6;
-    const left = Math.min(Math.max(10, r.left - 2), vw - m.width - 10);
+    // Le menu « … » s'aligne sur le bord droit du bouton, les autres sur le bord gauche.
+    const wanted = menuState && menuState.kind === 'more' ? r.right - m.width : r.left - 2;
+    const left = Math.min(Math.max(10, wanted), vw - m.width - 10);
     let top = r.bottom + gap;
     let above = false;
     if (top + m.height > vh - 10) { top = Math.max(10, r.top - m.height - gap); above = true; }
@@ -1199,9 +1527,25 @@
     if (!item || !menuState) return;
     const st = menuState;
     const value = item.dataset.value;
-    closeMenu(value !== 'done');
-    if (st.kind === 'status') setStatus(st.id, value); else setUrg(st.id, Number(value));
+    closeMenu(!['done', 'edit', 'delete'].includes(value));
+    if (st.kind === 'more') moreAction(st.id, value);
+    else if (st.kind === 'status') setStatus(st.id, value); else setUrg(st.id, Number(value));
   });
+  function moreAction(id, v) {
+    const today = todayISO();
+    if (v === 'done') validate(id);
+    else if (v === 'st:doing' || v === 'st:todo') setStatus(id, v.slice(3));
+    else if (v.indexOf('urg:') === 0) setUrg(id, Number(v.slice(4)));
+    else if (v === 'due:today') setWhen(id, today, null);
+    else if (v === 'due:tomorrow') setWhen(id, addDays(today, 1), null);
+    else if (v === 'due:monday') setWhen(id, nextWeekday(today, 1), null);
+    else if (v === 'due:none') setWhen(id, null, null);
+    else if (v === 'snooze:1h') snooze(id, '1h');
+    else if (v === 'snooze:tomorrow') snooze(id, 'tomorrow');
+    else if (v === 'edit') openTaskDialog(id);
+    else if (v === 'delete') askDelete(id);
+    else if (v === 'restore') restore(id);
+  }
   menu.addEventListener('keydown', e => {
     const items = Array.from(menu.querySelectorAll('.menu-item'));
     const i = items.indexOf(document.activeElement);
@@ -1223,25 +1567,31 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && menuState) closeMenu(true); });
 
   /* ================= list interactions ================= */
+  function askDelete(id) {
+    const t = S.tasks.get(id);
+    if (!t) return;
+    const isR = t.kind === 'reminder';
+    confirmBox('Supprimer ?', (isR ? 'Le rappel « ' : 'La tâche « ') + t.title + ' » sera supprimé' + (isR ? '' : 'e') + ' pour de bon.', 'Supprimer', () => removeTask(id));
+  }
   function onListClick(e) {
     const btn = e.target.closest('[data-act]');
     if (!btn) return;
-    const card = btn.closest('.card');
+    const card = btn.closest('.card, .row');
     if (!card) return;
     const id = card.dataset.id;
     const act = btn.dataset.act;
-    if (act === 'status' || act === 'urg') {
+    if (act === 'status' || act === 'urg' || act === 'more') {
       if (menuState && menuState.id === id && menuState.kind === act) { closeMenu(true); return; }
       openMenu(btn, act, id);
+    } else if (act === 'done') {
+      validate(id);
     } else if (act === 'toggle') {
       if (S.expanded.has(id)) S.expanded.delete(id); else S.expanded.add(id);
       render();
     } else if (act === 'edit') {
       openTaskDialog(id);
     } else if (act === 'delete') {
-      const t = S.tasks.get(id);
-      if (!t) return;
-      confirmBox('Supprimer ?', (t.kind === 'reminder' ? 'Le rappel « ' : 'La tâche « ') + t.title + ' » sera supprimé' + (t.kind === 'reminder' ? '' : 'e') + ' pour de bon.', 'Supprimer', () => removeTask(id));
+      askDelete(id);
     } else if (act === 'restore') {
       restore(id);
     }
@@ -1253,8 +1603,11 @@
     S.view = view;
     render();
     window.scrollTo(0, 0);
-    (view === 'archive' ? els.toTasks : els.toArchive).focus({ preventScroll: true });
+    const target = isBz() ? (view === 'archive' ? els.bzBack : els.bzArchive) : (view === 'archive' ? els.toTasks : els.toArchive);
+    target.focus({ preventScroll: true });
   }
+  els.bzArchive.addEventListener('click', () => switchView('archive'));
+  els.bzBack.addEventListener('click', () => switchView('tasks'));
   els.toArchive.addEventListener('click', () => switchView('archive'));
   els.toTasks.addEventListener('click', () => switchView('tasks'));
 
@@ -1265,23 +1618,51 @@
   const dlg = $('#task-dlg');
   const form = $('#task-form');
   const fTitle = $('#f-title'), fSubject = $('#f-subject'), fDesc = $('#f-desc'), fErr = $('#f-title-err');
-  let editingId = null;
+  const fDue = $('#f-due'), fTime = $('#f-time'), fWhenLegend = $('#f-when-legend'), fQuickDates = $('#f-quick-dates');
+  let editingId = null, dlgFromQuick = false;
   const formKind = () => ($('#f-kind-reminder').checked ? 'reminder' : 'task');
   function syncDialogTitle() {
     const k = formKind();
     $('#dlg-title').textContent = editingId ? (k === 'reminder' ? 'Modifier le rappel' : 'Modifier la tâche') : (k === 'reminder' ? 'Nouveau rappel' : 'Nouvelle tâche');
+    // Un rappel a une date et une heure ; une tâche, une échéance (jour seulement).
+    fTime.hidden = k !== 'reminder';
+    fWhenLegend.innerHTML = (k === 'reminder' ? 'Date et heure' : 'Échéance') + ' <span class="field-hint">(facultatif)</span>';
+    syncQuickDates();
   }
-  function openTaskDialog(id) {
+  const quickDates = () => { const today = todayISO(); return { today: today, tomorrow: addDays(today, 1), monday: nextWeekday(today, 1), none: '' }; };
+  function syncQuickDates() {
+    const q = quickDates();
+    fQuickDates.querySelectorAll('.qd').forEach(b => b.setAttribute('aria-pressed', String((fDue.value || '') === q[b.dataset.d])));
+  }
+  fQuickDates.addEventListener('click', e => {
+    const b = e.target.closest('.qd');
+    if (!b) return;
+    fDue.value = quickDates()[b.dataset.d];
+    if (!fDue.value) fTime.value = '';
+    syncQuickDates();
+  });
+  fDue.addEventListener('input', syncQuickDates);
+  fDue.addEventListener('change', syncQuickDates);
+  // Une heure sans date : aujourd'hui si l'heure est encore à venir, sinon demain.
+  fTime.addEventListener('change', () => {
+    if (fTime.value && !fDue.value) { const today = todayISO(); fDue.value = fTime.value > nowHM() ? today : addDays(today, 1); syncQuickDates(); }
+  });
+  // preset : ce qui a été lu dans l'ajout rapide (titre, type, date, heure, priorité).
+  function openTaskDialog(id, preset) {
     closeMenu(false);
     const t = id ? S.tasks.get(id) : null;
+    const pr = preset || {};
     editingId = t ? t.id : null;
+    if (t) dlgFromQuick = false;
     $('#dlg-ok').textContent = t ? 'Enregistrer' : 'Ajouter';
-    fTitle.value = t ? t.title : '';
+    fTitle.value = t ? t.title : (pr.title || '');
     fSubject.value = t ? t.subject : '';
     fDesc.value = t ? t.desc : '';
-    const kind = t ? t.kind : prefs.kind;
-    const cat = t ? t.cat : prefs.cat;
-    const urg = t ? t.urg : prefs.urg;
+    const kind = t ? t.kind : (pr.kind || prefs.kind);
+    const cat = t ? t.cat : (S.filter !== 'all' ? S.filter : prefs.cat);
+    const urg = t ? t.urg : (pr.urg || prefs.urg);
+    fDue.value = t ? (t.due || '') : (pr.due || '');
+    fTime.value = t ? (t.time || '') : (pr.time || '');
     $('#f-kind-' + (kind === 'reminder' ? 'reminder' : 'task')).checked = true;
     $('#f-cat-' + (cat === 'perso' ? 'perso' : 'pro')).checked = true;
     $('#f-urg-' + ([1, 2, 3].includes(urg) ? urg : 2)).checked = true;
@@ -1293,7 +1674,7 @@
   }
   $('#f-kind-task').addEventListener('change', syncDialogTitle);
   $('#f-kind-reminder').addEventListener('change', syncDialogTitle);
-  $('#add-btn').addEventListener('click', () => openTaskDialog(null));
+  $('#add-btn').addEventListener('click', () => { dlgFromQuick = false; openTaskDialog(null); });
   $('#dlg-cancel').addEventListener('click', () => closeDlg(dlg));
   dlg.addEventListener('click', e => { if (e.target === dlg) closeDlg(dlg); });
   form.addEventListener('submit', e => {
@@ -1309,13 +1690,154 @@
     const kind = formKind();
     const cat = (form.querySelector('input[name="cat"]:checked') || {}).value === 'perso' ? 'perso' : 'pro';
     const urg = Number((form.querySelector('input[name="urg"]:checked') || {}).value) || 2;
-    const fields = { kind: kind, title: title, subject: fSubject.value.trim(), desc: fDesc.value.trim(), cat: cat, urg: urg };
+    const due = isISO(fDue.value) ? fDue.value : null;
+    const time = kind === 'reminder' && due && isHM(fTime.value) ? fTime.value : null;
+    const fields = { kind: kind, title: title, subject: fSubject.value.trim(), desc: fDesc.value.trim(), cat: cat, urg: urg, due: due, time: time };
     closeDlg(dlg);
     if (editingId) editTask(editingId, fields);
-    else { prefs.cat = cat; prefs.urg = urg; prefs.kind = kind; savePrefs(); addTask(fields); }
+    else {
+      prefs.cat = cat; prefs.urg = urg; prefs.kind = kind; savePrefs();
+      addTask(fields);
+      if (dlgFromQuick) { els.qInput.value = ''; updatePreview(); }
+    }
     editingId = null;
+    dlgFromQuick = false;
   });
   fTitle.addEventListener('input', () => { if (fTitle.value.trim()) { fErr.hidden = true; fTitle.removeAttribute('aria-invalid'); } });
+
+  /* ================= ajout rapide, filtre, raccourcis ================= */
+  const quickCat = () => S.filter === 'perso' ? 'perso' : 'pro';
+  const finePointer = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  // Sous le champ : ce qui sera créé (« Rappel · Demain à 14:00 · Pro · priorité moyenne »).
+  function updatePreview() {
+    const v = els.qInput.value.trim();
+    if (!v || els.quick.hidden) { els.qPreview.hidden = true; els.qPreview.textContent = ''; return; }
+    const today = todayISO();
+    const q = parseQuick(v, today, nowHM());
+    const parts = ['<b>' + (q.kind === 'reminder' ? 'Rappel' : 'Tâche') + '</b>'];
+    parts.push(q.due ? esc(dayLabel(q.due, today)) + (q.time ? ' à <span class="tm">' + q.time + '</span>' : '') : 'sans échéance');
+    parts.push(CAT[quickCat()].label, 'priorité ' + URG[q.urg || 2].toLowerCase());
+    els.qPreview.innerHTML = parts.join(' · ') + (finePointer() ? ' <span class="hint">· Entrée pour ajouter</span>' : '');
+    els.qPreview.hidden = false;
+  }
+  els.quick.addEventListener('submit', e => {
+    e.preventDefault();
+    const v = els.qInput.value.trim();
+    if (!v) return;
+    const q = parseQuick(v, todayISO(), nowHM());
+    addTask({ kind: q.kind, title: q.title.slice(0, 80), subject: '', desc: '', cat: quickCat(), urg: q.urg || 2, due: q.due, time: q.time });
+    els.qInput.value = '';
+    updatePreview();
+    els.qInput.focus();
+  });
+  els.qInput.addEventListener('input', updatePreview);
+  els.qInput.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    e.preventDefault();
+    if (els.qInput.value) { els.qInput.value = ''; updatePreview(); } else els.qInput.blur();
+  });
+  $('#q-more').addEventListener('click', () => {
+    const v = els.qInput.value.trim();
+    const q = v ? parseQuick(v, todayISO(), nowHM()) : null;
+    dlgFromQuick = !!v;
+    openTaskDialog(null, q ? { title: q.title.slice(0, 80), kind: q.kind, due: q.due, time: q.time, urg: q.urg } : null);
+  });
+  function setFilter(f) {
+    if (f === S.filter) return;
+    S.filter = f;
+    prefs.filter = f;
+    savePrefs();
+    closeMenu(false);
+    render();
+  }
+  els.filter.addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (b) setFilter(b.dataset.f); });
+  els.filter.addEventListener('keydown', e => {
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    const order = ['pro', 'perso', 'all'];
+    setFilter(order[(order.indexOf(S.filter) + step + 3) % 3]);
+    els.filter.querySelector('[data-f="' + S.filter + '"]').focus();
+  });
+  // Sur PC : N (ou /) pour écrire une nouvelle tâche.
+  document.addEventListener('keydown', e => {
+    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+    const el = e.target;
+    if (el && (el.isContentEditable || /^(input|textarea|select)$/i.test(el.tagName))) return;
+    if (menuState || document.querySelector('dialog[open]') || els.quick.hidden) return;
+    if (e.key === 'n' || e.key === 'N' || e.key === '/') { e.preventDefault(); els.qInput.focus(); }
+  });
+
+  /* ================= style Bureau / Aventure (par appareil) ================= */
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  const syncThemeColor = () => { if (themeMeta) themeMeta.content = isBz() ? '#eeeae3' : '#23266f'; };
+  function applyStyle(style) {
+    const av = style === 'aventure';
+    prefs.style = av ? 'aventure' : 'bureau';
+    savePrefs();
+    closeMenu(false);
+    const r = document.documentElement;
+    r.classList.toggle('av', av);
+    r.classList.toggle('bz', !av);
+    syncThemeColor();
+    if (av) { lastSize = sizeKey(); drawScene(); }
+    else { r.style.backgroundColor = ''; document.body.style.backgroundColor = ''; }
+    setStyleIcons();
+    render();
+  }
+  syncThemeColor();
+
+  /* ================= rappels à l'heure (appli ouverte) + pastille ================= */
+  const NOTIF_KEY = 'pixel-todo-notified';
+  const notified = new Set(lsGet(NOTIF_KEY, []));
+  function checkAlerts() {
+    if (!S.loaded || !S.authChecked) return;
+    const today = todayISO(), hm = nowHM();
+    let changed = false;
+    S.tasks.forEach(t => {
+      if (t.archived || t.kind !== 'reminder' || !t.due || !t.time) return;
+      if (t.due > today || (t.due === today && t.time > hm)) return;
+      const key = t.id + '|' + t.due + '|' + t.time;
+      if (notified.has(key)) return;
+      notified.add(key);
+      changed = true;
+      // Passé depuis plus de 2 h (appli fermée à ce moment-là) : juste affiché « en retard », sans alerte.
+      const late = daysBetween(t.due, today) * 1440 + minutesOf(hm) - minutesOf(t.time);
+      if (late <= 120) fireAlert(t);
+    });
+    if (changed) lsSet(NOTIF_KEY, Array.from(notified).slice(-300));
+  }
+  function fireAlert(t) {
+    toast('Rappel ' + t.time + ' : « ' + t.title + ' »', 'Reporter d\'1 h', () => snooze(t.id, '1h'));
+    if (!prefs.alerts || S.mode === 'claude' || !('Notification' in window) || Notification.permission !== 'granted') return;
+    const title = 'Rappel · ' + t.time;
+    const opts = { body: t.title + (t.subject ? '\n' + t.subject : ''), icon: 'icons/icon-192.png', badge: 'icons/badge-72.png', tag: 'rappel-' + t.id, requireInteraction: true, data: { url: './' } };
+    const direct = () => { try { new Notification(title, opts); } catch (e) { /* notification impossible ici */ } };
+    if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistration().then(reg => (reg ? reg.showNotification(title, opts) : direct())).catch(direct);
+    else direct();
+  }
+  // Pastille sur l'icône de l'appli installée (barre des tâches) : nombre d'éléments en retard.
+  function updateBadge() {
+    if (S.mode === 'claude' || !('setAppBadge' in navigator) || !S.loaded) return;
+    const today = todayISO(), hm = nowHM();
+    let n = 0;
+    S.tasks.forEach(t => { if (!t.archived && inFilter(t) && isLate(t, today, hm)) n++; });
+    const p = n ? navigator.setAppBadge(n) : navigator.clearAppBadge();
+    if (p && p.catch) p.catch(() => { /* pastille non gérée */ });
+  }
+  // Redessine quand un rappel passe l'heure ou quand le jour change.
+  function signature() {
+    const today = todayISO(), hm = nowHM();
+    let late = '';
+    S.tasks.forEach(t => { if (!t.archived && isLate(t, today, hm)) late += t.id + ','; });
+    return today + '|' + late;
+  }
+  function tick() {
+    checkAlerts();
+    if (S.loaded && !menuState && signature() !== lastSig) render();
+  }
+  setInterval(tick, 20000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
 
   const cdlg = $('#confirm-dlg');
   let confirmAction = null;
@@ -1513,18 +2035,54 @@
       toast('Test impossible : ' + ((e && e.message) || 'erreur inconnue'));
     }
   });
-  $('#settings-btn').addEventListener('click', () => {
+  const alertsStatus = $('#alerts-status'), alertsOn = $('#alerts-on');
+  function refreshAlerts() {
+    if (!('Notification' in window)) {
+      alertsStatus.textContent = 'Ce navigateur ne gère pas les notifications : les rappels s\'affichent en bas de l\'appli.';
+      alertsOn.hidden = true;
+      return;
+    }
+    if (Notification.permission === 'denied') {
+      alertsStatus.textContent = 'Notifications bloquées pour l\'appli : autorise-les dans les réglages du navigateur ou de l\'appareil.';
+      alertsOn.hidden = true;
+      return;
+    }
+    const on = prefs.alerts && Notification.permission === 'granted';
+    alertsStatus.textContent = on ? 'Activées sur cet appareil.' : 'Pas encore activées ici : pour l\'instant, les rappels s\'affichent seulement en bas de l\'appli.';
+    alertsOn.hidden = on;
+  }
+  alertsOn.addEventListener('click', async () => {
+    try {
+      const perm = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+      prefs.alerts = perm === 'granted';
+      savePrefs();
+      toast(prefs.alerts ? 'Alertes des rappels activées sur cet appareil.' : 'Notifications refusées : les rappels s\'afficheront seulement dans l\'appli.');
+    } catch (e) {
+      toast('Activation impossible : ' + ((e && e.message) || 'erreur inconnue'));
+    }
+    refreshAlerts();
+  });
+  $('#style-row').addEventListener('change', e => { if (e.target.name === 'style') applyStyle(e.target.value); });
+  function openSettings() {
     closeMenu(false);
+    $('#st-' + (isBz() ? 'bureau' : 'aventure')).checked = true;
     $('#set-account').textContent = S.mode === 'firebase' && S.user
       ? 'Connecté avec ' + S.user.email + '. Tes tâches sont synchronisées sur tous tes appareils.'
       : S.mode === 'claude'
         ? 'Ta liste est enregistrée dans ton compte Claude et synchronisée entre tes appareils.'
         : 'Mode local : pas de compte, tes tâches restent sur cet appareil.';
     $('#set-logout').hidden = !(S.mode === 'firebase' && S.user);
+    // Dans la page Claude : ni récap, ni démarrage du PC, ni notifications (réservés à l'appli installée).
     $('#set-pc').hidden = S.mode === 'claude';
+    $('#set-recap').hidden = S.mode === 'claude';
+    $('#set-alerts').hidden = S.mode === 'claude';
+    $('#set-keys').hidden = !finePointer();
     openDlg(sdlg);
-    refreshRecap();
-  });
+    refreshAlerts();
+    if (S.mode !== 'claude') refreshRecap();
+  }
+  $('#settings-btn').addEventListener('click', openSettings);
+  $('#bz-settings').addEventListener('click', openSettings);
   $('#settings-close').addEventListener('click', () => closeDlg(sdlg));
   sdlg.addEventListener('click', e => { if (e.target === sdlg) closeDlg(sdlg); });
   $('#set-logout').addEventListener('click', () => {
@@ -1537,14 +2095,16 @@
   const pdlg = $('#popout-dlg');
   $('#popout-url').textContent = SELF_URL;
   $('#popout-link').href = SELF_URL;
-  $('#popout').addEventListener('click', () => {
+  function openPopout() {
     closeMenu(false);
     let w = null;
     try { w = window.open(SELF_URL, 'todo-pixel', 'popup=yes,width=440,height=860'); } catch (e) { w = null; }
     if (w) { toast('Fenêtre ouverte : place-la où tu veux.'); return; }
     openDlg(pdlg);
     $('#popout-link').focus();
-  });
+  }
+  $('#popout').addEventListener('click', openPopout);
+  $('#bz-popout').addEventListener('click', openPopout);
   $('#popout-close').addEventListener('click', () => closeDlg(pdlg));
   pdlg.addEventListener('click', e => { if (e.target === pdlg) closeDlg(pdlg); });
   $('#popout-copy').addEventListener('click', () => {
@@ -1583,7 +2143,7 @@
       if (!reduced()) setTimeout(() => { if (!toastEl.hidden) burst(toastEl, 12); }, 120);
     }
     toastSr.textContent = (quest ? quest + ' ' : '') + msg;
-    if (reduced()) toastText.textContent = msg;
+    if (reduced() || isBz()) toastText.textContent = msg;
     else {
       let i = 0;
       toastText.textContent = '';
