@@ -1,5 +1,5 @@
-/* Service worker : appli disponible hors ligne + notifications du récap du matin. */
-const CACHE = 'todo-pixel-v1';
+/* Service worker : appli disponible hors ligne, notifications du récap du matin et des rappels. */
+const CACHE = 'todo-pixel-v3';
 const SHELL = [
   './',
   './index.html',

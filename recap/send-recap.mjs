@@ -17,9 +17,32 @@ export function localNow(tz, date = new Date()) {
 
 const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
 
-export function buildRecap(items) {
+// today : jour local 'AAAA-MM-JJ'. Avec des échéances : rappels du jour (avec l'heure), retards, tâches dues aujourd'hui.
+// Sans rien de daté pour aujourd'hui ni en retard : le résumé de la liste, les plus urgentes en premier.
+export function buildRecap(items, today) {
   const open = items.filter(t => t && t.archived !== true && t.status !== 'done');
   if (!open.length) return { title: 'Récap du matin', body: 'Rien de prévu dans ta liste. Belle journée !' };
+  const day = s => (typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null);
+  const name = (t, n) => String(t.title || 'Sans titre').slice(0, n);
+  const byUrg = (a, b) => (Number(b.urg) - Number(a.urg)) || ((a.createdAt || 0) - (b.createdAt || 0));
+  const late = today ? open.filter(t => day(t.due) && t.due < today).sort(byUrg) : [];
+  const due = today ? open.filter(t => day(t.due) === today) : [];
+  if (late.length || due.length) {
+    const rem = due.filter(t => t.kind === 'reminder').sort((a, b) => String(a.time || '99').localeCompare(String(b.time || '99')));
+    const todo = due.filter(t => t.kind !== 'reminder').sort(byUrg);
+    const counts = [];
+    if (rem.length) counts.push(plural(rem.length, 'rappel'));
+    if (todo.length) counts.push(plural(todo.length, 'tâche'));
+    let head = counts.length ? `Aujourd'hui : ${counts.join(' et ')}` : 'Rien de daté pour aujourd\'hui';
+    if (late.length) head += `, ${late.length} en retard`;
+    const lines = [
+      ...late.map(t => `En retard : ${name(t, 50)}`),
+      ...rem.map(t => `${t.time ? t.time + ' ' : '• '}${name(t, 55)}`),
+      ...todo.map(t => `${Number(t.urg) === 3 ? '!! ' : '• '}${name(t, 60)}`)
+    ];
+    const more = lines.length > 4 ? `\n+ ${lines.length - 4} autre${lines.length - 4 > 1 ? 's' : ''}` : '';
+    return { title: 'Récap du matin', body: `${head}.\n${lines.slice(0, 4).join('\n')}${more}` };
+  }
   const tasks = open.filter(t => t.kind !== 'reminder');
   const reminders = open.filter(t => t.kind === 'reminder');
   const urgent = open.filter(t => Number(t.urg) === 3).length;
@@ -97,7 +120,7 @@ async function main() {
       const now = localNow(tz);
       if (!FORCE && (now.hour < hour || now.hour > hour + 2 || p.lastSent === now.day)) { skipped++; continue; }
       if (!items) items = (await userRef.collection('tasks').where('archived', '==', false).get()).docs.map(d => d.data());
-      const recap = buildRecap(items);
+      const recap = buildRecap(items, now.day);
       const payload = JSON.stringify({ ...recap, url: './', tag: `recap-${now.day}` });
       try {
         await webpush.sendNotification(p.subscription, payload, { TTL: 6 * 3600 });
