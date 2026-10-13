@@ -115,24 +115,26 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 .btn:active, .add:active, button.status-box:active, button.urg:active, .more:active, .tool:active, .qd:active { transform: scale(.94); }
 
 /* ---------- bandeau : bloc arrondi (forme du « O ») qui flotte au-dessus du fond ---------- */
-.band { position: relative; z-index: 2; overflow: hidden; max-width: 640px; margin: calc(env(safe-area-inset-top, 0px) + 12px) auto 0; padding: 18px 18px 18px 20px;
+.band { position: relative; z-index: 2; overflow: hidden; max-width: 640px; margin: calc(env(safe-area-inset-top, 0px) + 12px) auto 0; padding: 18px 19px;
   border-radius: 24px 0 24px 24px;
   background: linear-gradient(180deg, rgba(255, 255, 255, .07) 0%, rgba(255, 255, 255, 0) 100%), var(--brand); color: var(--on-brand);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 2px 0 var(--brand-2), 0 8px 14px -6px rgba(20, 63, 77, .35), 0 26px 38px -18px rgba(20, 63, 77, .55);
   animation: float 9s ease-in-out -2.5s infinite; }
 .band :focus-visible { outline-color: var(--gold); }
-.band-in { position: relative; z-index: 1; max-width: 640px; margin-inline: auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+/* titre du bandeau centré sur le même axe que les titres des cartes ; les boutons restent en haut à droite */
+.band-in { position: relative; z-index: 1; max-width: 640px; margin-inline: auto; }
 /* le « O » de la charte en filigrane dans le coin droit du bandeau, coupé par le bord de l'écran */
 .band::before { content: ""; position: absolute; z-index: 0; top: -64px; right: -68px; width: 250px; height: 200px; pointer-events: none;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 224'%3E%3Cpath fill-rule='evenodd' fill='rgb(255,255,255)' fill-opacity='.055' stroke='rgb(235,174,68)' stroke-opacity='.38' stroke-width='1.1' d='M64 .5H279.5V160A63.5 63.5 0 0 1 216 223.5H64A63.5 63.5 0 0 1 .5 160V64A63.5 63.5 0 0 1 64 .5ZM92 54H222V136A34 34 0 0 1 188 170H92A34 34 0 0 1 58 136V88A34 34 0 0 1 92 54Z'/%3E%3C/svg%3E") center / contain no-repeat; }
-.titles { min-width: 0; display: grid; gap: 6px; }
-.title { margin: 0; font: 700 20px/1.15 var(--font-ui); letter-spacing: .07em; text-transform: uppercase; color: var(--on-brand); }
+.titles { min-width: 0; display: grid; justify-items: center; gap: 6px; text-align: center; }
+.title { margin: 0; padding-inline: 44px; font: 700 20px/1.15 var(--font-ui); letter-spacing: .07em; text-transform: uppercase; color: var(--on-brand); }
+@media (hover: hover), (pointer: fine) { .band-in:has(.popout:not([hidden])) .title { padding-inline: 84px; } }
 .title-rule { display: block; width: 44px; height: 3px; border-radius: 2px; background: var(--gold); }
-.sub { margin: 2px 0 0; font: 400 13.5px/1.4 var(--font-ui); color: var(--on-brand-2); text-wrap: pretty; }
+.sub { margin: 2px 0 0; font: 400 13.5px/1.4 var(--font-ui); color: var(--on-brand-2); text-wrap: balance; }
 .sub .part { white-space: nowrap; }
 .sub .late { color: var(--gold); font-weight: 600; }
 .sub .flt { display: inline-block; margin-right: 2px; padding: 1px 8px; border: 1px solid var(--gold); border-radius: 999px; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
-.tools { flex: none; display: flex; gap: 2px; margin-right: -6px; }
+.tools { position: absolute; top: -4px; right: -6px; display: flex; gap: 2px; }
 .tool { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; color: var(--on-brand-2); }
 @media (hover: hover) { .tool:hover { background: rgba(255, 255, 255, .12); color: var(--on-brand); } }
 @media (hover: none) and (pointer: coarse) { .popout { display: none; } }
@@ -174,8 +176,14 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 @media (hover: hover) { button.status-box:hover { border-color: var(--brand); } }
 /* titre centré entre la case et le +, souligné d'un trait or comme le titre du bandeau */
 .card-text { min-width: 0; display: grid; justify-items: center; gap: 8px; padding-top: 2px; text-align: center; }
-.card-title { margin: 0; font: 600 16px/1.3 var(--font-ui); color: var(--ink); overflow-wrap: anywhere; text-wrap: balance; }
-.card-title::after { content: ""; display: block; width: 34px; height: 2.5px; margin: 7px auto 0; border-radius: 2px; background: var(--gold); }
+.card-title { margin: 0; font: 600 15px/1.3 var(--font-ui); color: var(--ink); overflow-wrap: anywhere; text-wrap: balance; }
+.card-title::after { content: ""; display: block; width: 28px; height: 2px; margin: 6px auto 0; border-radius: 2px; background: var(--gold); }
+/* l'objet de la tâche : juste sous le titre, sur toute la largeur, centré sur le même axe ; 3 lignes au plus, tout quand la carte est ouverte */
+.card-subject { margin: 10px 0 0; padding-inline: 6px; text-align: center; font: 400 14.5px/1.45 var(--font-ui); color: #26363b; overflow-wrap: anywhere; text-wrap: balance;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+.card.is-open .card-subject { display: block; }
+.card.is-archived .card-subject { color: var(--ink-2); }
+.foot-space { flex: 1 1 0; }
 .card.is-archived .card-title { font-weight: 400; color: var(--ink-2); }
 .card.is-archived .card-title::after { background: var(--line-2); }
 /* l'objet, en bas de la carte entre l'urgence et l'échéance (centré dans l'espace libre) */
@@ -226,7 +234,7 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 .spin circle { animation: spin-dot 1.2s linear infinite; }
 @keyframes spin-dot { from { opacity: 1; } to { opacity: .18; } }
 @keyframes bounce { 0% { transform: scale(.82); } 100% { transform: scale(1); } }
-.due, .chip, .when { flex: none; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font: 400 12.5px/1.3 var(--font-ui); color: var(--ink-2); }
+.due, .chip, .when { flex: none; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font: 400 13px/1.3 var(--font-ui); color: var(--ink-2); }
 .due .tm { font-weight: 600; font-variant-numeric: tabular-nums; }
 .due.late { color: var(--hi); font-weight: 600; }
 .chip { padding: 2px 9px; border-radius: 999px; background: var(--surface-2); font-size: 12px; }
@@ -424,12 +432,12 @@ input[type="date"].input, input[type="time"].input { font-variant-numeric: tabul
 
 @media (max-width: 380px) {
   body { padding-inline: 12px; }
-  .band { padding-inline: 16px 14px; }
+  .band { padding-inline: 15px; }
   .card { padding: 12px; }
   .card-top { grid-template-columns: 40px minmax(0, 1fr) 40px; column-gap: 8px; }
   .status-box { width: 40px; height: 40px; }
 }
-@media (min-width: 900px) { .band { margin-top: 22px; padding: 22px 22px 20px 26px; } .app { padding-top: 24px; } }
+@media (min-width: 900px) { .band { margin-top: 22px; padding: 22px 24px 20px; } .app { padding-top: 24px; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after, ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; transition: none !important; }
   /* sans animation, l'urgence haute garde un contour rouge fixe */
