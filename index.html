@@ -62,29 +62,48 @@
   --pop: 0 14px 34px rgba(20, 63, 77, .2), 0 3px 8px rgba(20, 63, 77, .1);
   --font-ui: "Montserrat", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --font-hand: "Caveat", "Segoe Print", "Bradley Hand", cursive;
-  /* fond : teintes du Midnight Green de 3 % à 12 % (plus clair en haut, pour la profondeur), une trame de points très légère
-     et le contour du « O » en bas à gauche */
-  --page-bg:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 224'%3E%3Cpath fill='none' stroke='rgb(20,63,77)' stroke-opacity='.075' stroke-width='1.4' d='M64 .7H279.3V160A63.3 63.3 0 0 1 216 223.3H64A63.3 63.3 0 0 1 .7 160V64A63.3 63.3 0 0 1 64 .7ZM92 54H222V136A34 34 0 0 1 188 170H92A34 34 0 0 1 58 136V88A34 34 0 0 1 92 54Z'/%3E%3C/svg%3E") left -110px bottom -70px / 400px auto no-repeat,
-    radial-gradient(120% 55% at 50% 0%, #f8f9fa 0%, rgba(248, 249, 250, 0) 70%),
-    radial-gradient(circle, rgba(20, 63, 77, .14) 0 1.1px, rgba(20, 63, 77, 0) 1.7px) 0 0 / 22px 22px,
-    linear-gradient(180deg, #f1f3f4 0%, #e3e8ea 100%);
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 /* scroll-padding : ce qu'on atteint au clavier ne reste jamais caché sous la barre du bas */
-html { -webkit-text-size-adjust: 100%; background: var(--page-bg); background-color: #e3e8ea; background-attachment: fixed; scroll-padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+html { -webkit-text-size-adjust: 100%; background: #dde4e7; scroll-padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
 body {
   margin: 0;
   min-height: 100%;
   padding-inline: 16px;
   padding-block: 0;
-  background: var(--page-bg);
-  background-attachment: fixed;
+  background: transparent;
   color: var(--ink);
   font: 400 15px/1.45 var(--font-ui);
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
+}
+/* ---------- fond : le logo Exosens en blanc et quelques motifs de la charte (chevrons, hachures, ligne de points
+   vers une cible, graduation), très légers et fixés à l'écran ; les cartes flottent par-dessus ---------- */
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  --lw: min(76vw, 420px);                                   /* largeur du logo */
+  --lb: calc(98px + env(safe-area-inset-bottom, 0px));      /* au-dessus de la barre du bas */
+  background:
+    url("icons/logo-exosens-blanc.svg") center bottom var(--lb) / var(--lw) auto no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 8.2' fill='%23EBAE44' fill-opacity='.6'%3E%3Cpath d='M44.6 0 36.4 8.2 39.4 8.2 47.6 0ZM38.6 0 30.4 8.2 33.3 8.2 41.5 0ZM32.5 0 24.3 8.2 27.2 8.2 35.4 0ZM26.4 0 18.2 8.2 21.1 8.2 29.4 0ZM20.4 0 12.1 8.2 15.1 8.2 23.3 0ZM14.3 0 6.1 8.2 9 8.2 17.2 0ZM8.2 0 0 8.2 3 8.2 11.2 0Z'/%3E%3C/svg%3E") left calc(50% + 24px - var(--lw) / 2) bottom calc(var(--lb) + var(--lw) * .16 + 18px) / 48px auto no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 90'%3E%3Cpath d='M7 88V20' stroke='%238FA6AE' stroke-width='1.6' stroke-linecap='round' stroke-dasharray='0 5'/%3E%3Cpath fill='%23EBAE44' fill-rule='evenodd' transform='scale(.53)' d='M1 13.2 13.2 1 25.5 13.3 13.2 25.5 1 13.2ZM13.2 0 0 13.2 13.2 26.4 26.4 13.2 13.2 0Z'/%3E%3C/svg%3E") left calc(50% - var(--lw) * .1495) bottom calc(var(--lb) + var(--lw) * .16 + 8px) / 14px 90px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 204 92' fill='%23fff'%3E%3Cpath fill-opacity='.4' d='M39.13 0 1.13 0 46.34 45.22 0 91.56 40.26 91.57 85.49 46.36Z'/%3E%3Cpath fill-opacity='.7' d='M98.32 0 60.33 0 105.54 45.22 59.2 91.56 99.45 91.57 144.68 46.36Z'/%3E%3Cpath d='M157.52 0 119.52 0 164.73 45.22 118.39 91.56 158.65 91.57 203.88 46.36Z'/%3E%3C/svg%3E") left -78px top 26% / 220px auto no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 204 92' fill='%23fff'%3E%3Cg transform='matrix(-1 0 0 1 204 0)'%3E%3Cpath fill-opacity='.4' d='M39.13 0 1.13 0 46.34 45.22 0 91.56 40.26 91.57 85.49 46.36Z'/%3E%3Cpath fill-opacity='.7' d='M98.32 0 60.33 0 105.54 45.22 59.2 91.56 99.45 91.57 144.68 46.36Z'/%3E%3Cpath d='M157.52 0 119.52 0 164.73 45.22 118.39 91.56 158.65 91.57 203.88 46.36Z'/%3E%3C/g%3E%3C/svg%3E") right -78px top 54% / 220px auto no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7.51 71' fill='%23143F4D' fill-opacity='.2'%3E%3Cpath d='M0 0.09 3.71 3.80 7.51 0.00 7.51 3.30 3.8 7.01 0 3.21ZM0 4.99 3.71 8.70 7.51 4.90 7.51 8.20 3.8 11.91 0 8.11ZM0 9.89 3.71 13.60 7.51 9.80 7.51 13.10 3.8 16.81 0 13.01ZM0 14.79 3.71 18.50 7.51 14.70 7.51 18.00 3.8 21.71 0 17.91ZM0 19.69 3.71 23.40 7.51 19.60 7.51 22.90 3.8 26.61 0 22.81ZM0 24.59 3.71 28.30 7.51 24.50 7.51 27.80 3.8 31.51 0 27.71ZM0 29.49 3.71 33.20 7.51 29.40 7.51 32.70 3.8 36.41 0 32.61ZM0 34.39 3.71 38.10 7.51 34.30 7.51 37.60 3.8 41.31 0 37.51ZM0 39.29 3.71 43.00 7.51 39.20 7.51 42.50 3.8 46.21 0 42.41ZM0 44.19 3.71 47.90 7.51 44.10 7.51 47.40 3.8 51.11 0 47.31ZM0 49.09 3.71 52.80 7.51 49.00 7.51 52.30 3.8 56.01 0 52.21ZM0 53.99 3.71 57.70 7.51 53.90 7.51 57.20 3.8 60.91 0 57.11ZM0 58.89 3.71 62.60 7.51 58.80 7.51 62.10 3.8 65.81 0 62.01ZM0 63.79 3.71 67.50 7.51 63.70 7.51 67.00 3.8 70.71 0 66.91Z'/%3E%3C/svg%3E") right 5px top 15% / 7.5px auto no-repeat,
+    radial-gradient(120% 55% at 50% 0%, rgba(255, 255, 255, .6) 0%, rgba(255, 255, 255, 0) 70%),
+    linear-gradient(180deg, #e9eef0 0%, #dde4e7 100%); }
+/* sur grand écran, le logo passe en haut à droite, comme le fond d'écran de la charte (dans la marge, à côté du bandeau) */
+@media (min-width: 1180px) {
+  body::before { --lw: min(calc((100vw - 640px) / 2 - 76px), 300px);
+    background:
+      url("icons/logo-exosens-blanc.svg") right 44px top 44px / var(--lw) auto no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 8.2' fill='%23EBAE44' fill-opacity='.6'%3E%3Cpath d='M44.6 0 36.4 8.2 39.4 8.2 47.6 0ZM38.6 0 30.4 8.2 33.3 8.2 41.5 0ZM32.5 0 24.3 8.2 27.2 8.2 35.4 0ZM26.4 0 18.2 8.2 21.1 8.2 29.4 0ZM20.4 0 12.1 8.2 15.1 8.2 23.3 0ZM14.3 0 6.1 8.2 9 8.2 17.2 0ZM8.2 0 0 8.2 3 8.2 11.2 0Z'/%3E%3C/svg%3E") left calc(100% + 4px - var(--lw)) top calc(44px + var(--lw) * .16 + 20px) / 48px auto no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 90'%3E%3Cg transform='matrix(1 0 0 -1 0 90)'%3E%3Cpath d='M7 88V20' stroke='%238FA6AE' stroke-width='1.6' stroke-linecap='round' stroke-dasharray='0 5'/%3E%3Cpath fill='%23EBAE44' fill-rule='evenodd' transform='scale(.53)' d='M1 13.2 13.2 1 25.5 13.3 13.2 25.5 1 13.2ZM13.2 0 0 13.2 13.2 26.4 26.4 13.2 13.2 0Z'/%3E%3C/g%3E%3C/svg%3E") left calc(100% - 37px - var(--lw) * .6495) top calc(44px + var(--lw) * .16 + 10px) / 14px 90px no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 204 92' fill='%23fff'%3E%3Cpath fill-opacity='.4' d='M39.13 0 1.13 0 46.34 45.22 0 91.56 40.26 91.57 85.49 46.36Z'/%3E%3Cpath fill-opacity='.7' d='M98.32 0 60.33 0 105.54 45.22 59.2 91.56 99.45 91.57 144.68 46.36Z'/%3E%3Cpath d='M157.52 0 119.52 0 164.73 45.22 118.39 91.56 158.65 91.57 203.88 46.36Z'/%3E%3C/svg%3E") left -60px top 38% / 240px auto no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 204 92' fill='%23fff'%3E%3Cg transform='matrix(-1 0 0 1 204 0)'%3E%3Cpath fill-opacity='.4' d='M39.13 0 1.13 0 46.34 45.22 0 91.56 40.26 91.57 85.49 46.36Z'/%3E%3Cpath fill-opacity='.7' d='M98.32 0 60.33 0 105.54 45.22 59.2 91.56 99.45 91.57 144.68 46.36Z'/%3E%3Cpath d='M157.52 0 119.52 0 164.73 45.22 118.39 91.56 158.65 91.57 203.88 46.36Z'/%3E%3C/g%3E%3C/svg%3E") right -60px top 72% / 240px auto no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7.51 71' fill='%23143F4D' fill-opacity='.2'%3E%3Cpath d='M0 0.09 3.71 3.80 7.51 0.00 7.51 3.30 3.8 7.01 0 3.21ZM0 4.99 3.71 8.70 7.51 4.90 7.51 8.20 3.8 11.91 0 8.11ZM0 9.89 3.71 13.60 7.51 9.80 7.51 13.10 3.8 16.81 0 13.01ZM0 14.79 3.71 18.50 7.51 14.70 7.51 18.00 3.8 21.71 0 17.91ZM0 19.69 3.71 23.40 7.51 19.60 7.51 22.90 3.8 26.61 0 22.81ZM0 24.59 3.71 28.30 7.51 24.50 7.51 27.80 3.8 31.51 0 27.71ZM0 29.49 3.71 33.20 7.51 29.40 7.51 32.70 3.8 36.41 0 32.61ZM0 34.39 3.71 38.10 7.51 34.30 7.51 37.60 3.8 41.31 0 37.51ZM0 39.29 3.71 43.00 7.51 39.20 7.51 42.50 3.8 46.21 0 42.41ZM0 44.19 3.71 47.90 7.51 44.10 7.51 47.40 3.8 51.11 0 47.31ZM0 49.09 3.71 52.80 7.51 49.00 7.51 52.30 3.8 56.01 0 52.21ZM0 53.99 3.71 57.70 7.51 53.90 7.51 57.20 3.8 60.91 0 57.11ZM0 58.89 3.71 62.60 7.51 58.80 7.51 62.10 3.8 65.81 0 62.01ZM0 63.79 3.71 67.50 7.51 63.70 7.51 67.00 3.8 70.71 0 66.91Z'/%3E%3C/svg%3E") left 22px top 12% / 7.5px auto no-repeat,
+      radial-gradient(120% 55% at 50% 0%, rgba(255, 255, 255, .6) 0%, rgba(255, 255, 255, 0) 70%),
+      linear-gradient(180deg, #e9eef0 0%, #dde4e7 100%); }
 }
 button { font: inherit; color: inherit; cursor: pointer; background: none; border: 0; padding: 0; }
 ::selection { background: var(--brand-soft); }
@@ -126,7 +145,7 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 
 /* ---------- tâches : blocs en forme de « O » (coin supérieur droit droit) avec un léger relief ---------- */
 .card {
-  position: relative; display: grid; gap: 12px; padding: 14px;
+  position: relative; display: grid; grid-template-columns: minmax(0, 1fr); padding: 14px;
   border-radius: var(--r) 0 var(--r) var(--r);
   background: linear-gradient(180deg, #ffffff 0%, #f6f7f8 100%);
   border: 1px solid rgba(20, 63, 77, .07);
@@ -137,13 +156,13 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 @keyframes float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }
 /* urgence haute (tâche ou rappel) : le contour bat comme un cœur, deux battements rapprochés puis une pause */
 .card[data-urg="3"]:not(.is-archived):not(.fx-clone)::before { content: ""; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none;
-  box-shadow: 0 0 0 2px rgba(229, 72, 61, .75), 0 0 18px 4px rgba(229, 72, 61, .36);
-  opacity: .22; animation: heartbeat 1.5s ease-in-out infinite; }
+  box-shadow: 0 0 0 1.5px rgba(229, 72, 61, .55), 0 0 12px 1px rgba(229, 72, 61, .22);
+  opacity: .3; animation: heartbeat 1.9s ease-in-out infinite; }
 @keyframes heartbeat {
-  0%, 50%, 100% { opacity: .22; transform: scale(1); }
-  10% { opacity: 1; transform: scale(1.014); }
-  20% { opacity: .42; transform: scale(1.003); }
-  30% { opacity: .92; transform: scale(1.01); }
+  0%, 52%, 100% { opacity: .3; transform: scale(1); }
+  12% { opacity: .78; transform: scale(1.006); }
+  22% { opacity: .42; transform: scale(1.001); }
+  32% { opacity: .66; transform: scale(1.004); }
 }
 .card-top { display: grid; grid-template-columns: 42px minmax(0, 1fr) 34px; column-gap: 12px; align-items: start; }
 .status-box { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px 0 12px 12px; border: 1.5px solid var(--line-2); background: #fff; color: var(--ink-3); box-shadow: 0 1px 2px rgba(20, 63, 77, .08); }
@@ -157,49 +176,43 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 .card-title::after { content: ""; display: block; width: 34px; height: 2.5px; margin: 7px auto 0; border-radius: 2px; background: var(--gold); }
 .card.is-archived .card-title { font-weight: 400; color: var(--ink-2); }
 .card.is-archived .card-title::after { background: var(--line-2); }
-.subject { justify-self: center; max-width: 100%; margin: 0; padding: 3px 11px; background: var(--surface-2); border-radius: 999px; font: 400 13.5px/1.4 var(--font-ui); color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card.is-open .subject { white-space: normal; overflow-wrap: anywhere; border-radius: 12px; }
+/* l'objet, en bas de la carte entre l'urgence et l'échéance (centré dans l'espace libre) */
+.foot-subject { flex: 1 1 120px; min-width: 0; display: flex; justify-content: center; }
+.subject { min-width: 0; max-width: 100%; margin: 0; padding: 3px 11px; background: var(--surface-2); border-radius: 999px; font: 400 13px/1.4 var(--font-ui); color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card.is-open .subject { white-space: normal; overflow-wrap: anywhere; border-radius: 12px; text-align: center; }
 .more { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; background: var(--surface-2); color: var(--brand); }
-.more .si { transition: transform .35s var(--spring); }
+.more .si { transition: transform .5s var(--spring); }
 .more[aria-expanded="true"] { background: var(--brand); color: var(--on-brand); }
-.more[aria-expanded="true"] .si { transform: rotate(45deg); }
-.card.just-toggled .more .si { animation: turn .38s var(--spring); }
-.card.just-toggled .desc { animation: unfold .32s var(--ease-ios); }
-@keyframes turn { from { transform: rotate(0); } }
-@keyframes unfold { from { opacity: 0; transform: translateY(-6px); } }
+.more[aria-expanded="true"] .si { transform: rotate(135deg); }
 @media (hover: hover) { .more:hover { background: var(--brand-soft); } .more[aria-expanded="true"]:hover { background: var(--brand-2); } }
-.desc { display: grid; gap: 10px; padding: 12px 0 0; border-top: 1px solid var(--line); }
+/* description : la carte s'allonge en douceur (les cartes du dessous glissent avec), le trait se déroule depuis le centre,
+   puis le texte, la date et les boutons arrivent l'un après l'autre ; même chose à l'envers à la fermeture */
+.desc-wrap { display: grid; grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .42s var(--ease-ios), visibility 0s linear .42s; }
+.card.is-open .desc-wrap { grid-template-rows: 1fr; visibility: visible; transition: grid-template-rows .55s var(--ease-ios), visibility 0s; }
+.desc-clip { min-height: 0; overflow: hidden; }
+.desc { display: grid; gap: 10px; margin-top: 12px; padding: 0 0 2px; }
+.desc::before { content: ""; height: 1px; background: var(--line); transform: scaleX(0); transition: transform .3s ease-in; }
+.card.is-open .desc::before { transform: scaleX(1); transition: transform .6s var(--ease-ios) .05s; }
+.desc > * { opacity: 0; transform: translateY(-10px); transition: opacity .18s ease, transform .25s ease-in; }
+.card.is-open .desc > * { opacity: 1; transform: none; transition: opacity .4s ease, transform .55s var(--spring); }
+.card.is-open .desc > :nth-child(1) { transition-delay: .1s; }
+.card.is-open .desc > :nth-child(2) { transition-delay: .17s; }
+.card.is-open .desc > :nth-child(3) { transition-delay: .24s; }
+/* la carte ouverte se soulève un peu */
+.card[data-kind="task"].is-open { box-shadow: inset 0 1px 0 #ffffff, 0 1.5px 0 #d5dcdf, 0 10px 20px -6px rgba(20, 63, 77, .18), 0 34px 48px -22px rgba(20, 63, 77, .5); }
 .desc-text { margin: 0; max-width: 65ch; font: 400 14.5px/1.55 var(--font-ui); color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; }
 .desc-text.is-empty { color: var(--ink-3); }
 .meta { margin: 0; font: 400 12.5px/1.4 var(--font-ui); color: var(--ink-3); }
 .desc-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 /* en bas : pastille d'urgence, barre de statut, échéance */
-.card-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.card-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 12px; }
 .urg { flex: none; height: 28px; padding: 0 11px 0 8px; display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; background: #fff; border: 1px solid var(--line); font: 600 12.5px/1 var(--font-ui); color: var(--ink-2); box-shadow: 0 1px 2px rgba(20, 63, 77, .06); }
 @media (hover: hover) { button.urg:hover { border-color: var(--line-2); } }
 .dot { flex: none; width: 12px; height: 12px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .55), transparent 45%), var(--c); box-shadow: inset 0 0 0 1px var(--cd), 0 0 0 3px var(--cg); }
 .dot[data-urg="1"] { --c: var(--u1); --cd: var(--u1-d); --cg: rgba(52, 180, 90, .2); }
 .dot[data-urg="2"] { --c: var(--u2); --cd: var(--u2-d); --cg: rgba(235, 174, 68, .28); }
 .dot[data-urg="3"] { --c: var(--u3); --cd: var(--u3-d); --cg: rgba(229, 72, 61, .2); }
-/* barre d'avancement façon chargement de jeu vidéo : rainure en creux, remplissage brillant à rayures qui défilent
-   et une petite lueur en tête quand la tâche est en cours */
-.bar { position: relative; flex: 1 1 90px; min-width: 60px; height: 10px; border-radius: 999px; background: linear-gradient(180deg, rgba(20, 63, 77, .1) 0%, rgba(20, 63, 77, .03) 100%), var(--surface-2); box-shadow: inset 0 1px 2px rgba(20, 63, 77, .2), 0 1px 0 rgba(255, 255, 255, .9); overflow: hidden; }
-.bar > span { position: relative; display: block; height: 100%; width: 0; border-radius: 999px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, .12) 45%, rgba(255, 255, 255, 0) 55%),
-    linear-gradient(45deg, rgba(255, 255, 255, .2) 25%, rgba(255, 255, 255, 0) 25%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, .2) 50%, rgba(255, 255, 255, .2) 75%, rgba(255, 255, 255, 0) 75%),
-    linear-gradient(90deg, var(--teal), var(--sky));
-  background-size: auto, 14px 14px, auto;
-  box-shadow: inset 0 -1px 0 rgba(13, 47, 58, .25); }
-.card[data-status="doing"] .bar > span { width: 50%; animation: stripes 1s linear infinite; }
-.card[data-status="doing"] .bar > span::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 12px; border-radius: 999px; background: radial-gradient(closest-side, rgba(255, 255, 255, .95), rgba(255, 255, 255, 0)); animation: glow 1.4s ease-in-out infinite; }
-.card[data-status="done"] .bar > span { width: 100%; background: linear-gradient(180deg, rgba(255, 255, 255, .4) 0%, rgba(255, 255, 255, 0) 55%), linear-gradient(90deg, var(--brand), var(--teal)); }
-.card.pop .bar > span { animation: grow .7s var(--ease-ios); }
-.card.pop[data-status="doing"] .bar > span { animation: grow .7s var(--ease-ios), stripes 1s linear infinite; }
 .card.pop .status-box { animation: bounce .45s var(--spring); }
-@keyframes grow { from { width: 0; } }
-@keyframes stripes { from { background-position: 0 0, 14px 0, 0 0; } to { background-position: 0 0, 0 0, 0 0; } }
-@keyframes glow { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
 /* en cours : les points de la case tournent en rond */
 .spin circle { animation: spin-dot 1.2s linear infinite; }
 @keyframes spin-dot { from { opacity: 1; } to { opacity: .18; } }
@@ -233,15 +246,14 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 .card[data-kind="reminder"] .card-title::after, .card.is-archived[data-kind="reminder"] .card-title::after { width: 72px; height: 9px; margin-top: 3px; border-radius: 0;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 9'%3E%3Cpath d='M1.5 6C9 2.5 15 2.6 22 4.6S35 7.6 44 4.8 59 1.6 70.5 4.2' fill='none' stroke='rgb(173,130,56)' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat; }
 .card.is-archived[data-kind="reminder"] .card-title { font-weight: 600; color: var(--note-ink-2); }
-.card[data-kind="reminder"] .subject { padding: 0; background: none; border-radius: 0; font: 600 19px/1.2 var(--font-hand); color: var(--note-ink-2); }
+.card[data-kind="reminder"] .subject { padding: 0 4px; background: none; border-radius: 0; font: 600 19px/1.15 var(--font-hand); color: var(--note-ink-2); }
 .card[data-kind="reminder"] .desc-text { font: 400 19px/1.35 var(--font-hand); color: var(--note-ink); }
 .card[data-kind="reminder"] .desc-text.is-empty { color: var(--note-ink-2); }
 .card[data-kind="reminder"] .more { background: rgba(91, 73, 39, .08); border-radius: 2px; color: var(--note-ink-2); }
 .card[data-kind="reminder"] .more[aria-expanded="true"] { background: var(--brand); color: var(--on-brand); }
-.card[data-kind="reminder"] .desc { border-top: 1px dashed rgba(91, 73, 39, .3); }
+.card[data-kind="reminder"] .desc::before { background: repeating-linear-gradient(90deg, rgba(91, 73, 39, .35) 0 6px, rgba(91, 73, 39, 0) 6px 11px); }
 .card[data-kind="reminder"] .meta { color: var(--note-ink-2); }
 .card[data-kind="reminder"] .urg { background: rgba(255, 255, 255, .4); border-color: rgba(91, 73, 39, .22); box-shadow: none; }
-.card[data-kind="reminder"] .bar { display: none; }
 .card[data-kind="reminder"] .due { color: var(--brand); font-weight: 600; }
 .card[data-kind="reminder"] .due.late { color: var(--hi); }
 .card[data-kind="reminder"] .chip { background: rgba(91, 73, 39, .1); }

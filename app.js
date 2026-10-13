@@ -570,15 +570,15 @@
         '<button type="button" class="btn btn-act btn-danger" data-act="delete">' + svgIco('trash', 15) + '<span>Supprimer</span></button>';
     return '<article class="' + cls + '" style="' + style + '" data-id="' + esc(t.id) + '" data-kind="' + t.kind + '" data-status="' + st + '" data-urg="' + t.urg + '" data-cat="' + t.cat + '">' +
       '<div class="card-top">' + status +
-        '<div class="card-text"><h3 class="card-title">' + esc(t.title) + '</h3>' + (t.subject ? '<p class="subject">' + esc(t.subject) + '</p>' : '') + '</div>' +
-        '<button type="button" class="more" data-act="toggle" aria-expanded="' + open + '" aria-controls="d-' + esc(t.id) + '" aria-label="' + (open ? 'Masquer' : 'Afficher') + ' la description">' + svgIco(open ? 'minus' : 'plus', 18, 2) + '</button>' +
+        '<div class="card-text"><h3 class="card-title">' + esc(t.title) + '</h3></div>' +
+        '<button type="button" class="more" data-act="toggle" aria-expanded="' + open + '" aria-controls="d-' + esc(t.id) + '" aria-label="' + (open ? 'Masquer' : 'Afficher') + ' la description">' + svgIco('plus', 18, 2) + '</button>' +
       '</div>' +
-      '<div class="desc" id="d-' + esc(t.id) + '"' + (open ? '' : ' hidden') + '>' +
+      '<div class="desc-wrap" id="d-' + esc(t.id) + '"' + (open ? '' : ' inert') + '><div class="desc-clip"><div class="desc">' +
         (t.desc ? '<p class="desc-text">' + esc(t.desc) + '</p>' : '<p class="desc-text is-empty">Pas de description.</p>') +
         '<p class="meta">' + (isR ? 'Créé ' : 'Créée ') + when(t.createdAt) + '</p>' +
         '<div class="desc-actions">' + actions + '</div>' +
-      '</div>' +
-      '<div class="card-foot">' + urg + '<span class="bar" aria-hidden="true"><span></span></span>' + tail + '</div>' +
+      '</div></div></div>' +
+      '<div class="card-foot">' + urg + '<span class="foot-subject">' + (t.subject ? '<span class="subject">' + esc(t.subject) + '</span>' : '') + '</span>' + tail + '</div>' +
     '</article>';
   }
   function emptyHTML(kind, hidden) {
@@ -774,6 +774,25 @@
     const isR = t.kind === 'reminder';
     confirmBox('Supprimer ?', (isR ? 'Le rappel « ' : 'La tâche « ') + t.title + ' » sera supprimé' + (isR ? '' : 'e') + ' pour de bon.', 'Supprimer', () => removeTask(id));
   }
+  function toggleCard(card, id) {
+    const open = !S.expanded.has(id);
+    if (open) S.expanded.add(id); else S.expanded.delete(id);
+    const wrap = card.querySelector('.desc-wrap');
+    const btn = card.querySelector('[data-act="toggle"]');
+    if (!open && wrap && wrap.contains(document.activeElement) && btn) btn.focus({ preventScroll: true });
+    card.classList.toggle('is-open', open);
+    if (wrap) { if (open) wrap.removeAttribute('inert'); else wrap.setAttribute('inert', ''); }
+    if (btn) {
+      btn.setAttribute('aria-expanded', String(open));
+      btn.setAttribute('aria-label', (open ? 'Masquer' : 'Afficher') + ' la description');
+    }
+    // Carte ouverte près du bas de l'écran : on la fait remonter doucement pour voir ce qui vient de s'ouvrir.
+    if (open) setTimeout(() => {
+      if (!card.isConnected) return;
+      const r = card.getBoundingClientRect(), limit = window.innerHeight - 96;
+      if (r.bottom > limit) window.scrollBy({ top: Math.min(r.bottom - limit, r.top - 90), behavior: reduced() ? 'auto' : 'smooth' });
+    }, 420);
+  }
   function onListClick(e) {
     const btn = e.target.closest('[data-act]');
     if (!btn) return;
@@ -785,9 +804,7 @@
       if (menuState && menuState.id === id && menuState.kind === act) { closeMenu(true); return; }
       openMenu(btn, act, id);
     } else if (act === 'toggle') {
-      if (S.expanded.has(id)) S.expanded.delete(id); else S.expanded.add(id);
-      S.toggled = id;
-      renderAnimated();
+      toggleCard(card, id);
     } else if (act === 'edit') {
       openTaskDialog(id);
     } else if (act === 'delete') {

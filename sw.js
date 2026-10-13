@@ -1,5 +1,5 @@
 /* Service worker : appli disponible hors ligne, notifications du récap du matin et des rappels. */
-const CACHE = 'todo-list-v6';
+const CACHE = 'todo-list-v7';
 const SHELL = [
   './',
   './index.html',
@@ -9,6 +9,7 @@ const SHELL = [
   './manifest.webmanifest',
   './fonts/montserrat-latin.woff2',
   './fonts/caveat-latin.woff2',
+  './icons/logo-exosens-blanc.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',
