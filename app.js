@@ -554,20 +554,19 @@
       ? '<span class="status-box" data-st="done" role="img" aria-label="' + (isR ? 'Fait' : 'Validée') + '">' + STATUS_ICO.done() + '</span>'
       : '<button type="button" class="status-box" data-st="' + stInfo.icon + '" data-act="status" aria-haspopup="menu" aria-expanded="false" aria-label="' + esc('Statut de ' + what + ' : ' + stInfo.label + '. Changer le statut') + '">' + STATUS_ICO[stInfo.icon]() + '</button>';
     const urgLabel = 'Urgence ' + URG[t.urg].toLowerCase();
+    // Juste la pastille de couleur : le mot (basse, moyenne, haute) reste dans le menu, en info-bulle et pour les lecteurs d'écran.
     const urg = archived
-      ? '<span class="urg" data-urg="' + t.urg + '">' + dot(t.urg) + '<span>' + URG[t.urg] + '</span></span>'
-      : '<button type="button" class="urg" data-urg="' + t.urg + '" data-act="urg" aria-haspopup="menu" aria-expanded="false" aria-label="' + esc(urgLabel + ' pour ' + what + '. Changer l\'urgence') + '">' + dot(t.urg) + '<span aria-hidden="true">' + URG[t.urg] + '</span></button>';
+      ? '<span class="urg" data-urg="' + t.urg + '" role="img" title="' + urgLabel + '" aria-label="' + urgLabel + '">' + dot(t.urg) + '</span>'
+      : '<button type="button" class="urg" data-urg="' + t.urg + '" data-act="urg" aria-haspopup="menu" aria-expanded="false" title="' + urgLabel + '" aria-label="' + esc(urgLabel + ' pour ' + what + '. Changer l\'urgence') + '">' + dot(t.urg) + '</button>';
     let tail = '';
     if (archived) tail += '<span class="when">' + (isR ? 'Classé ' : 'Validée ') + when(t.archivedAt) + '</span>';
     else if (t.due) tail += '<span class="due' + (late ? ' late' : '') + '">' + svgIco(isR ? 'bell' : 'cal', 14) + '<span>' + esc(dayLabel(t.due, today)) + '</span>' + (t.time ? '<span class="tm">' + t.time + '</span>' : '') + '</span>';
     if (S.filter === 'all' && t.cat === 'perso') tail += '<span class="chip">Perso</span>';
+    const act = (name, ico, label, extra, text) => '<button type="button" class="act' + (extra || '') + '" data-act="' + name + '" title="' + esc(label) + '" aria-label="' + esc(label + ' : ' + what) + '">' + svgIco(ico, 16) + (text ? '<span>' + text + '</span>' : '') + '</button>';
     const actions = archived
-      ? '<button type="button" class="btn btn-act" data-act="restore">' + svgIco('undo', 15) + '<span>Remettre dans la liste</span></button>' +
-        '<button type="button" class="btn btn-act btn-danger" data-act="delete">' + svgIco('trash', 15) + '<span>Supprimer</span></button>'
-      : (isR && t.due ? '<button type="button" class="btn btn-act" data-act="snooze">' + svgIco('clock', 15) + '<span>Reporter d\'1 h</span></button>' +
-          '<button type="button" class="btn btn-act" data-act="tomorrow">' + svgIco('cal', 15) + '<span>Demain 9 h</span></button>' : '') +
-        '<button type="button" class="btn btn-act" data-act="edit">' + svgIco('pencil', 15) + '<span>Modifier</span></button>' +
-        '<button type="button" class="btn btn-act btn-danger" data-act="delete">' + svgIco('trash', 15) + '<span>Supprimer</span></button>';
+      ? act('restore', 'undo', 'Remettre dans la liste', '') + act('delete', 'trash', 'Supprimer', ' act-danger')
+      : (isR && t.due ? act('snooze', 'clock', 'Reporter d\'1 h', ' act-txt', '+1 h') + act('tomorrow', 'cal', 'Reporter à demain 9 h', ' act-txt', 'Demain') : '') +
+        act('edit', 'pencil', 'Modifier', '') + act('delete', 'trash', 'Supprimer', ' act-danger');
     return '<article class="' + cls + '" style="' + style + '" data-id="' + esc(t.id) + '" data-kind="' + t.kind + '" data-status="' + st + '" data-urg="' + t.urg + '" data-cat="' + t.cat + '">' +
       '<div class="card-top">' + status +
         '<div class="card-text"><h3 class="card-title">' + esc(t.title) + '</h3></div>' +
@@ -575,8 +574,8 @@
       '</div>' +
       '<div class="desc-wrap" id="d-' + esc(t.id) + '"' + (open ? '' : ' inert') + '><div class="desc-clip"><div class="desc">' +
         (t.desc ? '<p class="desc-text">' + esc(t.desc) + '</p>' : '<p class="desc-text is-empty">Pas de description.</p>') +
-        '<p class="meta">' + (isR ? 'Créé ' : 'Créée ') + when(t.createdAt) + '</p>' +
-        '<div class="desc-actions">' + actions + '</div>' +
+        '<div class="desc-row"><p class="meta">' + (isR ? 'Créé ' : 'Créée ') + when(t.createdAt) + '</p>' +
+        '<div class="desc-actions">' + actions + '</div></div>' +
       '</div></div></div>' +
       '<div class="card-foot">' + urg + '<span class="foot-subject">' + (t.subject ? '<span class="subject">' + esc(t.subject) + '</span>' : '') + '</span>' + tail + '</div>' +
     '</article>';
