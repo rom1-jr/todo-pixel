@@ -1770,7 +1770,7 @@
 
   /* ================= style Bureau / Aventure (par appareil) ================= */
   const themeMeta = document.querySelector('meta[name="theme-color"]');
-  const syncThemeColor = () => { if (themeMeta) themeMeta.content = isBz() ? '#eeeae3' : '#23266f'; };
+  const syncThemeColor = () => { if (themeMeta) themeMeta.content = isBz() ? '#143f4d' : '#23266f'; };
   function applyStyle(style) {
     const av = style === 'aventure';
     prefs.style = av ? 'aventure' : 'bureau';

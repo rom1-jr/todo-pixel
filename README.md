@@ -128,4 +128,4 @@ Dans l'appli ouverte depuis l'icône : **Réglages** (en haut à droite) → heu
 
 - **Tes données** sont dans Firestore et les règles réservent l'accès à ton compte. Le code de ce dépôt est public, tes tâches non.
 - **Hors ligne**, l'appli s'ouvre quand même et envoie tes changements au retour du réseau.
-- **Polices** : IBM Plex Sans, IBM Plex Mono, Press Start 2P, Pixelify Sans et Jacquard 24, sous licence SIL Open Font License (voir `fonts/`).
+- **Polices** : style Bureau en Segoe UI (police de Windows, celle de la charte), police système sur iPhone ; style Aventure en Press Start 2P, Pixelify Sans et Jacquard 24, sous licence SIL Open Font License (voir `fonts/`).

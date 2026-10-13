@@ -1,5 +1,5 @@
 /* Service worker : appli disponible hors ligne, notifications du récap du matin et des rappels. */
-const CACHE = 'todo-pixel-v2';
+const CACHE = 'todo-pixel-v3';
 const SHELL = [
   './',
   './index.html',
@@ -17,12 +17,7 @@ const SHELL = [
   './fonts/pixelify-sans-latin-500-normal.woff2',
   './fonts/pixelify-sans-latin-600-normal.woff2',
   './fonts/pixelify-sans-latin-700-normal.woff2',
-  './fonts/jacquard-24-latin-400-normal.woff2',
-  './fonts/ibm-plex-sans-latin-400-normal.woff2',
-  './fonts/ibm-plex-sans-latin-500-normal.woff2',
-  './fonts/ibm-plex-sans-latin-600-normal.woff2',
-  './fonts/ibm-plex-mono-latin-400-normal.woff2',
-  './fonts/ibm-plex-mono-latin-500-normal.woff2'
+  './fonts/jacquard-24-latin-400-normal.woff2'
 ];
 // Fichiers qui changent quand on met l'appli à jour : réseau d'abord, cache si hors ligne.
 const FRESH = ['/', '/index.html', '/app.js', '/config.js'];
