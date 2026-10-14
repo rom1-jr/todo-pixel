@@ -1,5 +1,5 @@
 /* Service worker : appli disponible hors ligne, notifications du récap du matin et des rappels. */
-const CACHE = 'todo-list-v7';
+const CACHE = 'todo-list-v8';
 const SHELL = [
   './',
   './index.html',

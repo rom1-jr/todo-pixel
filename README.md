@@ -59,7 +59,7 @@ Sur GitHub, ouvre [`config.js`](config.js) → crayon → remplace chaque `REMPL
 
 1. **Safari** → <https://rom1-jr.github.io/todo-pixel/>.
 2. **Partager** → **Sur l'écran d'accueil** → **Ajouter**.
-3. Ouvre l'appli **depuis l'icône** → e-mail + mot de passe (6 caractères minimum ; l'œil au bout du champ l'affiche en clair pour le vérifier) → **Créer mon compte**.
+3. Ouvre l'appli **depuis l'icône** → e-mail + mot de passe (6 caractères minimum) → **Créer mon compte**.
 
 Ouvre-la toujours depuis l'icône, pas depuis Safari.
 
@@ -113,6 +113,7 @@ Dans l'appli ouverte depuis l'icône : **Réglages** (en haut à droite) → heu
 | Notifications bloquées | Réglages → Notifications → To do list → Autoriser. |
 | Pas de récap le matin | **Actions** → **Récap du matin** → dernier lancement : le message dit quelle étape revoir (7.2 à 7.4). |
 | Pas d'installation possible dans Edge | Raccourci `--app` de la partie 6. |
+| « E-mail ou mot de passe incorrect » avec le bon mot de passe | Compte créé avant le 14/10/2026, ou mot de passe changé par « Mot de passe oublié ? » : touche **Convertir mon compte** sous le message, une seule fois. |
 
 ## Au quotidien
 
@@ -131,4 +132,5 @@ Dans l'appli ouverte depuis l'icône : **Réglages** (en haut à droite) → heu
 ## Bon à savoir
 
 - **Tes données** sont dans Firestore et les règles réservent l'accès à ton compte. Le code de ce dépôt est public, tes tâches non.
+- **Ton mot de passe** ne part jamais tel quel : l'appli envoie à Firebase une empreinte calculée sur l'appareil (PBKDF2-SHA-256, 600 000 tours, l'e-mail sert de sel). Dans les outils de développement, la connexion montre `k1.…` à la place du mot de passe. Seule exception : le bouton **Convertir mon compte**, qui l'envoie une dernière fois pour un compte d'avant ce changement.
 - **Hors ligne**, l'appli s'ouvre quand même et envoie tes changements au retour du réseau.

@@ -1,7 +1,7 @@
-/* To do list (PWA) — organisation du croquis : une carte par tâche (case de statut, titre, objet, + pour la description,
+/* To do list (PWA) — organisation du croquis : une carte par tâche (case de statut, titre, objet, flèche pour la description,
    étapes, pastille d'urgence, échéance), bouton + pour ajouter, archives en bas. Couleurs de la charte graphique.
    Vue « Aujourd'hui », tâches qui se répètent, étapes à cocher, balayage sur téléphone (valider / reporter à demain).
-   Synchro via Firebase quand config.js est rempli, via la base de la page quand elle tourne dans Claude,
+   Synchro via Firebase quand config.js est rempli (le mot de passe part sous forme d'empreinte), via la base de la page quand elle tourne dans Claude,
    sinon mode local (tâches gardées dans le navigateur). */
 (() => {
   'use strict';
@@ -33,8 +33,6 @@
     pencil: '<path d="M5 19l.8-3.6L15.6 5.6a1.5 1.5 0 0 1 2.1 0l.7.7a1.5 1.5 0 0 1 0 2.1L8.6 18.2z"/>',
     undo: '<path d="M9 14.5L4.5 10 9 5.5"/><path d="M4.5 10H14a5 5 0 0 1 0 10h-3"/>',
     chev: '<path d="M6 9.5l6 6 6-6"/>',
-    eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
-    eyeOff: '<path d="M4 4l16 16"/><path d="M9.9 5.8A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3 3.8M6.3 7.6A17 17 0 0 0 2.5 12S6 18.5 12 18.5a9.4 9.4 0 0 0 4.2-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
     repeat: '<path d="M16.5 3.5L19.5 6.5 16.5 9.5"/><path d="M4.5 11.5V9.5a3 3 0 0 1 3-3h12"/><path d="M7.5 20.5L4.5 17.5 7.5 14.5"/><path d="M19.5 12.5v2a3 3 0 0 1-3 3h-12"/>',
     steps: '<path d="M4 6.5l1.6 1.6L8.8 5"/><path d="M11.5 7H20"/><path d="M4 13.5l1.6 1.6 3.2-3.1"/><path d="M11.5 14H20"/><path d="M11.5 20H20"/><path d="M5.2 20h1.4"/>'
   };
@@ -1245,18 +1243,26 @@
   document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
 
   /* ================= sign-in ================= */
-  const aEmail = $('#a-email'), aPass = $('#a-pass'), aErr = $('#a-err');
-  // Œil : afficher le mot de passe en clair le temps de le vérifier.
-  const aEye = $('#a-eye');
-  const syncEye = shown => {
-    aPass.type = shown ? 'text' : 'password';
-    aEye.setAttribute('aria-pressed', String(shown));
-    aEye.setAttribute('aria-label', shown ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
-    aEye.title = aEye.getAttribute('aria-label');
-    aEye.innerHTML = svgIco(shown ? 'eyeOff' : 'eye', 20);
-  };
-  syncEye(false);
-  aEye.addEventListener('click', () => { syncEye(aPass.type === 'password'); aPass.focus(); });
+  const aEmail = $('#a-email'), aPass = $('#a-pass'), aErr = $('#a-err'), aConvert = $('#a-convert');
+  // Le mot de passe ne part jamais tel quel : Firebase reçoit une empreinte calculée sur l'appareil
+  // (PBKDF2-SHA-256, 600 000 tours, l'e-mail sert de sel). Dans les requêtes, on ne voit que « k1.… ».
+  const KEY_ITER = 600000;
+  async function passKey(email, pass) {
+    if (!(window.crypto && crypto.subtle)) throw Object.assign(new Error('crypto'), { code: 'app/no-crypto' });
+    const enc = new TextEncoder();
+    const base = await crypto.subtle.importKey('raw', enc.encode(pass.normalize('NFC')), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode('todo-list|' + email.trim().toLowerCase()), iterations: KEY_ITER }, base, 256);
+    let bin = '';
+    new Uint8Array(bits).forEach(b => { bin += String.fromCharCode(b); });
+    return 'k1.' + btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  // Comptes déjà passés à l'empreinte sur cet appareil : inutile de leur proposer la conversion.
+  const KEYED_KEY = 'todo-keyed';
+  const mailKey = email => email.trim().toLowerCase();
+  const keyedList = () => { const l = lsGet(KEYED_KEY, []); return Array.isArray(l) ? l : []; };
+  const keyedHas = email => keyedList().includes(mailKey(email));
+  const keyedAdd = email => lsSet(KEYED_KEY, keyedList().filter(x => x !== mailKey(email)).concat(mailKey(email)).slice(-5));
+  const BAD_PASS = ['auth/invalid-credential', 'auth/wrong-password', 'auth/invalid-login-credentials'];
   function authError(e) {
     const code = (e && e.code) || '';
     const map = {
@@ -1271,26 +1277,65 @@
       'auth/too-many-requests': 'Trop d\'essais. Réessaie dans quelques minutes.',
       'auth/network-request-failed': 'Pas de connexion internet.',
       'auth/operation-not-allowed': 'La connexion par e-mail n\'est pas activée dans Firebase (étape 3.2 du guide).',
-      'auth/configuration-not-found': 'La connexion par e-mail n\'est pas activée dans Firebase (étape 3.2 du guide).'
+      'auth/configuration-not-found': 'La connexion par e-mail n\'est pas activée dans Firebase (étape 3.2 du guide).',
+      'auth/requires-recent-login': 'Reconnecte-toi, puis recommence.',
+      'app/no-crypto': 'Ce navigateur ne peut pas protéger le mot de passe : ouvre l\'appli à son adresse https (partie 5 du guide).'
     };
     return map[code] || ('Connexion impossible (' + (code || 'erreur inconnue') + ').');
   }
   function showAuthError(msg) { aErr.textContent = msg; aErr.hidden = !msg; }
-  function authBusy(on) { ['#a-login', '#a-signup', '#a-reset'].forEach(s => { $(s).disabled = on; }); }
+  function authBusy(on) { ['#a-login', '#a-signup', '#a-reset', '#a-convert-btn'].forEach(s => { $(s).disabled = on; }); }
+  // E-mail et mot de passe remplis ? Sinon, message et curseur dans le champ vide.
+  function authFilled() {
+    if (!aEmail.value.trim()) { showAuthError('Entre ton adresse e-mail.'); aEmail.focus(); return false; }
+    if (!aPass.value) { showAuthError('Entre ton mot de passe.'); aPass.focus(); return false; }
+    return true;
+  }
   $('#auth-form').addEventListener('submit', e => {
     e.preventDefault();
     showAuthError('');
+    aConvert.hidden = true;
+    if (!authFilled()) return;
+    const email = aEmail.value.trim();
     authBusy(true);
-    FB.signInWithEmailAndPassword(fb.auth, aEmail.value.trim(), aPass.value)
-      .catch(err => showAuthError(authError(err)))
+    passKey(email, aPass.value)
+      .then(key => FB.signInWithEmailAndPassword(fb.auth, email, key))
+      .then(() => keyedAdd(email))
+      .catch(err => {
+        showAuthError(authError(err));
+        // Compte créé avant l'empreinte : on propose de le convertir, une seule fois.
+        if (BAD_PASS.includes(err && err.code) && !keyedHas(email)) aConvert.hidden = false;
+      })
+      .finally(() => authBusy(false));
+  });
+  // Conversion : dernier envoi du mot de passe tel quel (Firebase ne connaît que lui), puis il est remplacé par l'empreinte.
+  $('#a-convert-btn').addEventListener('click', () => {
+    showAuthError('');
+    if (!authFilled()) return;
+    if (typeof FB.updatePassword !== 'function') { showAuthError('Ferme complètement l\'appli et rouvre-la pour finir la mise à jour, puis réessaie.'); return; }
+    const email = aEmail.value.trim(), pass = aPass.value;
+    let key = '';
+    authBusy(true);
+    passKey(email, pass)
+      .then(k => { key = k; return FB.signInWithEmailAndPassword(fb.auth, email, pass); })
+      .then(cred => FB.updatePassword(cred.user, key))
+      .then(() => { keyedAdd(email); aConvert.hidden = true; toast('Compte converti : ton mot de passe ne part plus tel quel.'); })
+      .catch(err => {
+        if (fb.auth.currentUser) toast('Conversion inachevée (' + ((err && err.code) || 'erreur') + ') : elle sera reproposée à la prochaine connexion.');
+        else showAuthError(authError(err));
+      })
       .finally(() => authBusy(false));
   });
   $('#a-signup').addEventListener('click', () => {
     showAuthError('');
+    aConvert.hidden = true;
+    if (!authFilled()) return;
     if (aPass.value.length < 6) { showAuthError('Choisis un mot de passe de 6 caractères minimum.'); aPass.focus(); return; }
+    const email = aEmail.value.trim();
     authBusy(true);
-    FB.createUserWithEmailAndPassword(fb.auth, aEmail.value.trim(), aPass.value)
-      .then(() => toast('Compte créé. Bienvenue !'))
+    passKey(email, aPass.value)
+      .then(key => FB.createUserWithEmailAndPassword(fb.auth, email, key))
+      .then(() => { keyedAdd(email); toast('Compte créé. Bienvenue !'); })
       .catch(err => showAuthError(authError(err)))
       .finally(() => authBusy(false));
   });
