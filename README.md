@@ -113,22 +113,24 @@ Dans l'appli ouverte depuis l'icône : **Réglages** (en haut à droite) → heu
 | Notifications bloquées | Réglages → Notifications → To do list → Autoriser. |
 | Pas de récap le matin | **Actions** → **Récap du matin** → dernier lancement : le message dit quelle étape revoir (7.2 à 7.4). |
 | Pas d'installation possible dans Edge | Raccourci `--app` de la partie 6. |
+| « E-mail ou mot de passe incorrect » avec le bon mot de passe | Compte créé avant le 14/10/2026, ou mot de passe changé par « Mot de passe oublié ? » : touche **Convertir mon compte** sous le message, une seule fois. |
 
 ## Au quotidien
 
-- **Une carte par tâche** : à gauche, la case de statut (× pas commencée, points qui tournent en cours, ✓ validée) ; au centre, le titre et, dessous, l'objet ; à droite, **+** qui déroule les étapes, la description (les adresses web y sont cliquables), et les boutons Demain, crayon (modifier) et corbeille (supprimer). En bas de la carte : la pastille d'urgence (verte, jaune ou rouge ; touche-la pour la changer), le compteur d'étapes et l'échéance. Les rappels sont des post-it écrits à la main.
+- **Une carte par tâche** : à gauche, la case de statut (× pas commencée, points qui tournent en cours, ✓ validée) ; au centre, le titre et, dessous, l'objet ; à droite, la flèche qui déroule les étapes, la description (les adresses web y sont cliquables), le crayon (modifier) et la corbeille (supprimer). En bas de la carte : la pastille d'urgence (verte, jaune ou rouge ; touche-la pour la changer), le compteur d'étapes et l'échéance. Les rappels sont des post-it écrits à la main.
 - **Aujourd'hui / Tout** : sous le bandeau. **Aujourd'hui** ne montre que ce qui est prévu aujourd'hui, en retard ou en cours ; son petit anneau se remplit avec ce que tu as déjà fait dans la journée. Le choix est retenu sur chaque appareil.
 - **Étapes** : dans la fenêtre d'ajout, une étape par ligne (« Créer le compte AD », « Installer Office »…). On les coche dans la carte ouverte ; le compteur (2/3) s'affiche en bas.
 - **Répéter** : tous les jours, en semaine (lun.–ven.), chaque semaine ou chaque mois. Une fois validée, la tâche revient toute seule à la date suivante, étapes décochées, et une trace part aux archives. Ça marche aussi dans le titre : `Vérifier les sauvegardes tous les jours`, `Point équipe chaque lundi 9h`.
-- **Sur téléphone, balaie une carte** : vers la droite pour la valider, vers la gauche pour la reporter à demain (un rappel passe à demain 9 h).
+- **Sur téléphone, balaie une carte** : vers la droite pour la valider, vers la gauche pour la reporter à demain (un rappel garde son heure). **Annuler**, dans le message du bas, remet la date d'avant.
 - **Urgence haute** : le contour de la carte bat comme un cœur, pour la repérer d'un coup d'œil.
 - **Valider** : case de statut → **Validée**. La tâche éclate comme une bulle et part aux archives ; un rappel classé se déchire comme un post-it. **Voir les archives** en bas de l'écran (la flèche de retour la remet dans la liste si besoin).
 - **Ajouter** : bouton **+** sous la liste (ou touche **N** sur PC). Dans le titre, une date (« demain », « lundi », « 15/10 ») devient l'échéance, une heure (« 14h », « 9h30 ») crée un rappel, « tous les jours » ou « chaque lundi » la fait revenir, un « ! » seul met l'urgence haute. Exemple : `Rappeler le fournisseur demain 14h`.
 - **Ordre de la liste** : ce qui est en retard d'abord, puis l'urgence, puis l'échéance la plus proche.
 - **Pro / Perso / Tout** : réglages → **Affichage sur cet appareil**. Choisis **Pro** sur le PC du bureau pour ne voir que le travail.
-- **Rappels** : réglages → **Activer les alertes ici**. La notification s'affiche à l'heure tant que l'appli est ouverte (sur le PC, garde-la sur le côté de l'écran). Un rappel se reporte d'1 h ou à demain 9 h depuis sa carte (**+**). Le récap du matin liste aussi les rappels du jour.
+- **Rappels** : réglages → **Activer les alertes ici**. La notification s'affiche à l'heure tant que l'appli est ouverte (sur le PC, garde-la sur le côté de l'écran). Quand l'alerte s'affiche, **Reporter d'1 h** la décale (avec **Annuler** ensuite) ; pour une autre date : crayon → **Échéance**. Le récap du matin liste aussi les rappels du jour.
 
 ## Bon à savoir
 
 - **Tes données** sont dans Firestore et les règles réservent l'accès à ton compte. Le code de ce dépôt est public, tes tâches non.
+- **Ton mot de passe** ne part jamais tel quel : l'appli envoie à Firebase une empreinte calculée sur l'appareil (PBKDF2-SHA-256, 600 000 tours, l'e-mail sert de sel). Dans les outils de développement, la connexion montre `k1.…` à la place du mot de passe. Seule exception : le bouton **Convertir mon compte**, qui l'envoie une dernière fois pour un compte d'avant ce changement.
 - **Hors ligne**, l'appli s'ouvre quand même et envoie tes changements au retour du réseau.
