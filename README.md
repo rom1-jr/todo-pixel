@@ -59,7 +59,7 @@ Sur GitHub, ouvre [`config.js`](config.js) → crayon → remplace chaque `REMPL
 
 1. **Safari** → <https://rom1-jr.github.io/todo-pixel/>.
 2. **Partager** → **Sur l'écran d'accueil** → **Ajouter**.
-3. Ouvre l'appli **depuis l'icône** → e-mail + mot de passe (6 caractères minimum) → **Créer mon compte**.
+3. Ouvre l'appli **depuis l'icône** → e-mail + mot de passe (6 caractères minimum ; l'œil au bout du champ l'affiche en clair pour le vérifier) → **Créer mon compte**.
 
 Ouvre-la toujours depuis l'icône, pas depuis Safari.
 
@@ -116,17 +116,17 @@ Dans l'appli ouverte depuis l'icône : **Réglages** (en haut à droite) → heu
 
 ## Au quotidien
 
-- **Une carte par tâche** : à gauche, la case de statut (× pas commencée, points qui tournent en cours, ✓ validée) ; au centre, le titre et, dessous, l'objet ; à droite, **+** qui déroule les étapes, la description (les adresses web y sont cliquables), et les boutons Demain, crayon (modifier) et corbeille (supprimer). En bas de la carte : la pastille d'urgence (verte, jaune ou rouge ; touche-la pour la changer), le compteur d'étapes et l'échéance. Les rappels sont des post-it écrits à la main.
+- **Une carte par tâche** : à gauche, la case de statut (× pas commencée, points qui tournent en cours, ✓ validée) ; au centre, le titre et, dessous, l'objet ; à droite, la flèche qui déroule les étapes, la description (les adresses web y sont cliquables), le crayon (modifier) et la corbeille (supprimer). En bas de la carte : la pastille d'urgence (verte, jaune ou rouge ; touche-la pour la changer), le compteur d'étapes et l'échéance. Les rappels sont des post-it écrits à la main.
 - **Aujourd'hui / Tout** : sous le bandeau. **Aujourd'hui** ne montre que ce qui est prévu aujourd'hui, en retard ou en cours ; son petit anneau se remplit avec ce que tu as déjà fait dans la journée. Le choix est retenu sur chaque appareil.
 - **Étapes** : dans la fenêtre d'ajout, une étape par ligne (« Créer le compte AD », « Installer Office »…). On les coche dans la carte ouverte ; le compteur (2/3) s'affiche en bas.
 - **Répéter** : tous les jours, en semaine (lun.–ven.), chaque semaine ou chaque mois. Une fois validée, la tâche revient toute seule à la date suivante, étapes décochées, et une trace part aux archives. Ça marche aussi dans le titre : `Vérifier les sauvegardes tous les jours`, `Point équipe chaque lundi 9h`.
-- **Sur téléphone, balaie une carte** : vers la droite pour la valider, vers la gauche pour la reporter à demain (un rappel passe à demain 9 h).
+- **Sur téléphone, balaie une carte** : vers la droite pour la valider, vers la gauche pour la reporter à demain (un rappel garde son heure). **Annuler**, dans le message du bas, remet la date d'avant.
 - **Urgence haute** : le contour de la carte bat comme un cœur, pour la repérer d'un coup d'œil.
 - **Valider** : case de statut → **Validée**. La tâche éclate comme une bulle et part aux archives ; un rappel classé se déchire comme un post-it. **Voir les archives** en bas de l'écran (la flèche de retour la remet dans la liste si besoin).
 - **Ajouter** : bouton **+** sous la liste (ou touche **N** sur PC). Dans le titre, une date (« demain », « lundi », « 15/10 ») devient l'échéance, une heure (« 14h », « 9h30 ») crée un rappel, « tous les jours » ou « chaque lundi » la fait revenir, un « ! » seul met l'urgence haute. Exemple : `Rappeler le fournisseur demain 14h`.
 - **Ordre de la liste** : ce qui est en retard d'abord, puis l'urgence, puis l'échéance la plus proche.
 - **Pro / Perso / Tout** : réglages → **Affichage sur cet appareil**. Choisis **Pro** sur le PC du bureau pour ne voir que le travail.
-- **Rappels** : réglages → **Activer les alertes ici**. La notification s'affiche à l'heure tant que l'appli est ouverte (sur le PC, garde-la sur le côté de l'écran). Un rappel se reporte d'1 h ou à demain 9 h depuis sa carte (**+**). Le récap du matin liste aussi les rappels du jour.
+- **Rappels** : réglages → **Activer les alertes ici**. La notification s'affiche à l'heure tant que l'appli est ouverte (sur le PC, garde-la sur le côté de l'écran). Quand l'alerte s'affiche, **Reporter d'1 h** la décale (avec **Annuler** ensuite) ; pour une autre date : crayon → **Échéance**. Le récap du matin liste aussi les rappels du jour.
 
 ## Bon à savoir
 

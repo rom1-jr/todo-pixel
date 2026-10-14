@@ -32,7 +32,9 @@
     trash: '<path d="M5 7h14M10 7V4.5h4V7M7 7l1 12.5h8L17 7"/>',
     pencil: '<path d="M5 19l.8-3.6L15.6 5.6a1.5 1.5 0 0 1 2.1 0l.7.7a1.5 1.5 0 0 1 0 2.1L8.6 18.2z"/>',
     undo: '<path d="M9 14.5L4.5 10 9 5.5"/><path d="M4.5 10H14a5 5 0 0 1 0 10h-3"/>',
-    clock: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4.5l3 2"/>',
+    chev: '<path d="M6 9.5l6 6 6-6"/>',
+    eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+    eyeOff: '<path d="M4 4l16 16"/><path d="M9.9 5.8A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3 3.8M6.3 7.6A17 17 0 0 0 2.5 12S6 18.5 12 18.5a9.4 9.4 0 0 0 4.2-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
     repeat: '<path d="M16.5 3.5L19.5 6.5 16.5 9.5"/><path d="M4.5 11.5V9.5a3 3 0 0 1 3-3h12"/><path d="M7.5 20.5L4.5 17.5 7.5 14.5"/><path d="M19.5 12.5v2a3 3 0 0 1-3 3h-12"/>',
     steps: '<path d="M4 6.5l1.6 1.6L8.8 5"/><path d="M11.5 7H20"/><path d="M4 13.5l1.6 1.6 3.2-3.1"/><path d="M11.5 14H20"/><path d="M11.5 20H20"/><path d="M5.2 20h1.4"/>'
   };
@@ -448,29 +450,26 @@
     renderAnimated();
     Store.patch(id, { urg: urg, updatedAt: next.updatedAt });
   }
-  // Nouvelle date et heure d'un rappel (« Reporter »).
-  function setWhen(id, due, time) {
+  // Nouvelle date (et heure pour un rappel), avec « Annuler » dans le message en bas.
+  function setWhen(id, due, time, quiet) {
     const t = S.tasks.get(id);
     if (!t) return;
+    const prev = { due: t.due, time: t.time };
     const next = normalize(id, Object.assign({}, t, { due: due, time: time }));
     commit(next);
     S.fresh.add(id);
     renderAnimated();
     Store.patch(id, { due: next.due, time: next.time, updatedAt: next.updatedAt });
-    toast(next.due ? 'Rappel reporté à ' + whenWords(next) + '.' : 'Rappel sans date.');
+    if (quiet) return;
+    const what = next.kind === 'reminder' ? 'Rappel reporté' : 'Tâche reportée';
+    const when = next.due === todayISO() && next.time ? next.time : whenWords(next);
+    toast(next.due ? what + ' à ' + when + '.' : what + ', sans date.', 'Annuler', () => setWhen(id, prev.due, prev.time, true));
   }
-  // Tâche reportée à demain (un rappel, lui, passe à demain 9 h).
+  // Reporté à demain (balayage vers la gauche) : un rappel garde son heure (9 h s'il n'en avait pas).
   function postpone(id) {
     const t = S.tasks.get(id);
     if (!t) return;
-    if (t.kind === 'reminder') { snooze(id, 'tomorrow'); return; }
-    const due = addDays(todayISO(), 1);
-    const next = normalize(id, Object.assign({}, t, { due: due }));
-    commit(next);
-    S.fresh.add(id);
-    renderAnimated();
-    Store.patch(id, { due: due, updatedAt: next.updatedAt });
-    toast('Tâche reportée à demain.');
+    setWhen(id, addDays(todayISO(), 1), t.kind === 'reminder' ? (t.time || '09:00') : null);
   }
   // Étape cochée ou décochée.
   function toggleStep(id, i) {
@@ -495,9 +494,9 @@
     renderAnimated(focusAfterRemoval);
     Store.patch(cur.id, { due: due, status: 'todo', steps: next.steps, updatedAt: next.updatedAt });
   }
-  function snooze(id, mode) {
-    const today = todayISO();
-    const w = mode === 'tomorrow' ? { due: addDays(today, 1), time: '09:00' } : plusMinutes(today, nowHM(), 60);
+  // Rappel reporté d'1 h, depuis le message de l'alerte.
+  function snooze(id) {
+    const w = plusMinutes(todayISO(), nowHM(), 60);
     setWhen(id, w.due, w.time);
   }
   // Copie de la carte posée au même endroit, pour l'animer pendant que la vraie disparaît de la liste.
@@ -668,13 +667,11 @@
     const act = (name, ico, label, extra, text) => '<button type="button" class="act' + (extra || '') + '" data-act="' + name + '" title="' + esc(label) + '" aria-label="' + esc(label + ' : ' + what) + '">' + svgIco(ico, 16) + (text ? '<span>' + text + '</span>' : '') + '</button>';
     const actions = archived
       ? act('restore', 'undo', 'Remettre dans la liste', '') + act('delete', 'trash', 'Supprimer', ' act-danger')
-      : (isR && t.due ? act('snooze', 'clock', 'Reporter d\'1 h', ' act-txt', '+1 h') + act('tomorrow', 'cal', 'Reporter à demain 9 h', ' act-txt', 'Demain') : '') +
-        (!isR ? act('later', 'cal', 'Reporter à demain', ' act-txt', 'Demain') : '') +
-        act('edit', 'pencil', 'Modifier', '') + act('delete', 'trash', 'Supprimer', ' act-danger');
+      : act('edit', 'pencil', 'Modifier', '') + act('delete', 'trash', 'Supprimer', ' act-danger');
     return '<article class="' + cls + '" style="' + style + '" data-id="' + esc(t.id) + '" data-kind="' + t.kind + '" data-status="' + st + '" data-urg="' + t.urg + '" data-cat="' + t.cat + '">' +
       '<div class="card-top">' + status +
         '<div class="card-text"><h3 class="card-title">' + esc(t.title) + '</h3></div>' +
-        '<button type="button" class="more" data-act="toggle" aria-expanded="' + open + '" aria-controls="d-' + esc(t.id) + '" aria-label="' + (open ? 'Masquer' : 'Afficher') + ' la description">' + svgIco('plus', 18, 2) + '</button>' +
+        '<button type="button" class="more" data-act="toggle" aria-expanded="' + open + '" aria-controls="d-' + esc(t.id) + '" aria-label="' + (open ? 'Masquer' : 'Afficher') + ' la description">' + svgIco('chev', 18, 2.2) + '</button>' +
       '</div>' +
       (!isR && t.subject ? '<p class="card-subject">' + esc(t.subject) + '</p>' : '') +
       '<div class="desc-wrap" id="d-' + esc(t.id) + '"' + (open ? '' : ' inert') + '><div class="desc-clip"><div class="desc">' +
@@ -929,12 +926,6 @@
       askDelete(id);
     } else if (act === 'restore') {
       restore(id);
-    } else if (act === 'snooze') {
-      snooze(id, '1h');
-    } else if (act === 'tomorrow') {
-      snooze(id, 'tomorrow');
-    } else if (act === 'later') {
-      postpone(id);
     } else if (act === 'step') {
       toggleStep(id, Number(btn.dataset.i));
     }
@@ -1222,7 +1213,7 @@
     if (changed) lsSet(NOTIF_KEY, Array.from(notified).slice(-300));
   }
   function fireAlert(t) {
-    toast('Rappel ' + t.time + ' : « ' + t.title + ' »', 'Reporter d\'1 h', () => snooze(t.id, '1h'));
+    toast('Rappel ' + t.time + ' : « ' + t.title + ' »', 'Reporter d\'1 h', () => snooze(t.id));
     if (!prefs.alerts || S.mode === 'claude' || !('Notification' in window) || Notification.permission !== 'granted') return;
     const title = 'Rappel · ' + t.time;
     const opts = { body: t.title + (t.subject ? '\n' + t.subject : ''), icon: 'icons/icon-192.png', badge: 'icons/badge-72.png', tag: 'rappel-' + t.id, requireInteraction: true, data: { url: './' } };
@@ -1255,6 +1246,17 @@
 
   /* ================= sign-in ================= */
   const aEmail = $('#a-email'), aPass = $('#a-pass'), aErr = $('#a-err');
+  // Œil : afficher le mot de passe en clair le temps de le vérifier.
+  const aEye = $('#a-eye');
+  const syncEye = shown => {
+    aPass.type = shown ? 'text' : 'password';
+    aEye.setAttribute('aria-pressed', String(shown));
+    aEye.setAttribute('aria-label', shown ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+    aEye.title = aEye.getAttribute('aria-label');
+    aEye.innerHTML = svgIco(shown ? 'eyeOff' : 'eye', 20);
+  };
+  syncEye(false);
+  aEye.addEventListener('click', () => { syncEye(aPass.type === 'password'); aPass.focus(); });
   function authError(e) {
     const code = (e && e.code) || '';
     const map = {
